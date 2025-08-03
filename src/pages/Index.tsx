@@ -32,6 +32,35 @@ const Index = () => {
     password: ''
   });
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
+  const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
+  const [selectedTournamentForRegistration, setSelectedTournamentForRegistration] = useState<any>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'error'>('pending');
+
+  // Функция обработки регистрации на турнир с оплатой
+  const handleTournamentRegistration = (tournament: any) => {
+    if (!isLoggedIn) {
+      alert('Для регистрации на турнир необходимо войти в систему');
+      return;
+    }
+    setSelectedTournamentForRegistration(tournament);
+    setShowRegistrationDialog(true);
+    setPaymentStatus('pending');
+  };
+
+  // Симуляция процесса оплаты
+  const processPayment = async () => {
+    setPaymentStatus('processing');
+    
+    // Симуляция обработки платежа
+    setTimeout(() => {
+      setPaymentStatus('success');
+      setTimeout(() => {
+        setShowRegistrationDialog(false);
+        setPaymentStatus('pending');
+        alert(`Вы успешно зарегистрированы на турнир "${selectedTournamentForRegistration?.title}"`);
+      }, 2000);
+    }, 3000);
+  };
 
   // Тестовые аккаунты
   const testUsers: UserData[] = [
@@ -228,8 +257,11 @@ const Index = () => {
                 Детские шахматные
                 <span className="text-primary"> турниры онлайн</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8 font-body">
+              <p className="text-xl text-gray-600 mb-4 font-body">
                 Развиваем логическое мышление и стратегические навыки детей через увлекательные шахматные соревнования
+              </p>
+              <p className="text-lg text-primary font-semibold mb-8">
+                Участие в турнире — всего 250 рублей
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
@@ -440,15 +472,22 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="text-sm text-gray-600">
                       <Icon name="Users" size={16} className="inline mr-1" />
                       {tournament.participants}/{tournament.maxParticipants} участников
                     </div>
+                    <div className="text-sm font-semibold text-primary">
+                      <Icon name="CreditCard" size={16} className="inline mr-1" />
+                      250 ₽
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
                     <Button 
                       size="sm"
                       className="bg-primary hover:bg-gold-600 text-black"
                       disabled={tournament.status === 'Места заполнены'}
+                      onClick={() => handleTournamentRegistration(tournament)}
                     >
                       {tournament.status === 'Места заполнены' ? 'Мест нет' : 'Участвовать'}
                     </Button>
@@ -1389,6 +1428,77 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Диалог регистрации на турнир с оплатой */}
+      <Dialog open={showRegistrationDialog} onOpenChange={setShowRegistrationDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Регистрация на турнир</DialogTitle>
+            <DialogDescription className="font-body">
+              {selectedTournamentForRegistration?.title}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Информация об участнике */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Участник</h4>
+              <p className="text-sm text-gray-600">{currentUser?.fullName}</p>
+              <p className="text-sm text-gray-600">ID ФШР: {currentUser?.fcrId}</p>
+            </div>
+
+            {/* Информация о стоимости */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Стоимость участия:</span>
+                <span className="text-2xl font-bold text-blue-600">250 ₽</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                Оплата производится единовременно при регистрации
+              </p>
+            </div>
+
+            {/* Статус оплаты */}
+            {paymentStatus === 'processing' && (
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-600"></div>
+                  <span className="text-yellow-700">Обработка платежа...</span>
+                </div>
+              </div>
+            )}
+
+            {paymentStatus === 'success' && (
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center space-x-3">
+                  <Icon name="CheckCircle" size={20} className="text-green-600" />
+                  <span className="text-green-700">Платеж успешно обработан!</span>
+                </div>
+              </div>
+            )}
+
+            {/* Кнопки */}
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowRegistrationDialog(false)}
+                disabled={paymentStatus === 'processing'}
+              >
+                Отмена
+              </Button>
+              <Button
+                className="flex-1 bg-primary hover:bg-gold-600 text-black"
+                onClick={processPayment}
+                disabled={paymentStatus === 'processing' || paymentStatus === 'success'}
+              >
+                {paymentStatus === 'processing' ? 'Обработка...' : 
+                 paymentStatus === 'success' ? 'Готово' : 'Оплатить 250 ₽'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
