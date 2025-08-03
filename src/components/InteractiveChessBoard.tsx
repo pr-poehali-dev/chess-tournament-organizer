@@ -46,8 +46,8 @@ const InteractiveChessBoard = () => {
           alt={`Черный ${piece.type}`}
           className="object-contain drop-shadow-lg transition-transform hover:scale-110"
           style={{
-            width: '24px',
-            height: '24px',
+            width: '54px',
+            height: '54px',
             filter: 'drop-shadow(1px 1px 2px rgba(255,255,255,0.3))'
           }}
         />
