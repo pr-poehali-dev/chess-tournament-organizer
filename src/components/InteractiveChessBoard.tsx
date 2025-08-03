@@ -300,17 +300,157 @@ const InteractiveChessBoard = () => {
     return moves;
   };
 
-  // Получить все возможные ходы для игрока (учитывая шах)
-  const getAllPossibleMovesForPlayer = (color: 'white' | 'black'): Array<{from: Position, to: Position}> => {
+  // Получить сырые ходы для фигуры на указанной доске
+  const getRawMovesOnBoard = (board: (ChessPiece | null)[][], row: number, col: number): Position[] => {
+    const piece = board[row][col];
+    if (!piece) return [];
+
+    const moves: Position[] = [];
+
+    switch (piece.type) {
+      case 'pawn':
+        const direction = piece.color === 'white' ? -1 : 1;
+        const startRow = piece.color === 'white' ? 6 : 1;
+
+        // Ход вперед
+        if (row + direction >= 0 && row + direction < 8 && !board[row + direction][col]) {
+          moves.push({ row: row + direction, col });
+          
+          // Двойной ход с начальной позиции
+          if (row === startRow && !board[row + 2 * direction][col]) {
+            moves.push({ row: row + 2 * direction, col });
+          }
+        }
+
+        // Взятие по диагонали
+        for (const colOffset of [-1, 1]) {
+          const newRow = row + direction;
+          const newCol = col + colOffset;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (targetPiece && targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+        
+      case 'rook':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'knight':
+        const knightMoves = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
+        for (const [dr, dc] of knightMoves) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+
+      case 'bishop':
+        for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'queen':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'king':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+    }
+
+    return moves;
+  };
+
+  // Проверить легальность хода на указанной доске
+  const isMoveLegalOnBoard = (board: (ChessPiece | null)[][], fromRow: number, fromCol: number, toRow: number, toCol: number): boolean => {
+    const testBoard = board.map(row => [...row]);
+    const piece = testBoard[fromRow][fromCol];
+    if (!piece) return false;
+
+    testBoard[fromRow][fromCol] = null;
+    testBoard[toRow][toCol] = piece;
+
+    return !isKingInCheck(testBoard, piece.color);
+  };
+
+  // Получить все возможные ходы для игрока на указанной доске
+  const getAllPossibleMovesForPlayerOnBoard = (board: (ChessPiece | null)[][], color: 'white' | 'black'): Array<{from: Position, to: Position}> => {
     const allMoves: Array<{from: Position, to: Position}> = [];
     
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = board[row][col];
         if (piece && piece.color === color) {
-          const rawMoves = getRawMoves(row, col);
-          // Фильтруем только легальные ходы
-          const legalMoves = rawMoves.filter(move => isMoveLegal(row, col, move.row, move.col));
+          const rawMoves = getRawMovesOnBoard(board, row, col);
+          const legalMoves = rawMoves.filter(move => isMoveLegalOnBoard(board, row, col, move.row, move.col));
           legalMoves.forEach(move => {
             allMoves.push({
               from: { row, col },
@@ -322,6 +462,11 @@ const InteractiveChessBoard = () => {
     }
     
     return allMoves;
+  };
+
+  // Получить все возможные ходы для игрока (учитывая шах)
+  const getAllPossibleMovesForPlayer = (color: 'white' | 'black'): Array<{from: Position, to: Position}> => {
+    return getAllPossibleMovesForPlayerOnBoard(board, color);
   };
 
   // Проверка возможных ходов для пешки
@@ -383,17 +528,18 @@ const InteractiveChessBoard = () => {
       const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
       const isNextPlayerInCheck = isKingInCheck(newBoard, nextPlayer);
       
+      // Проверяем, есть ли у следующего игрока легальные ходы (используем новую доску)
+      const nextPlayerMoves = getAllPossibleMovesForPlayerOnBoard(newBoard, nextPlayer);
+      
       setBoard(newBoard);
       setSelectedSquare(null);
       setPossibleMoves([]);
       setCurrentPlayer(nextPlayer);
       
-      // Проверяем, есть ли у следующего игрока легальные ходы
-      const nextPlayerMoves = getAllPossibleMovesForPlayer(nextPlayer);
-      
       // Обновляем статус игры
       if (isNextPlayerInCheck) {
         if (nextPlayerMoves.length === 0) {
+          console.log('Checkmate detected! Player:', nextPlayer, 'Moves:', nextPlayerMoves.length);
           setGameStatus('checkmate');
         } else {
           setGameStatus('check');
@@ -404,6 +550,7 @@ const InteractiveChessBoard = () => {
         });
       } else {
         if (nextPlayerMoves.length === 0) {
+          console.log('Stalemate detected! Player:', nextPlayer, 'Moves:', nextPlayerMoves.length);
           setGameStatus('stalemate');
         } else {
           setGameStatus('playing');
@@ -527,6 +674,13 @@ const InteractiveChessBoard = () => {
           className="mt-2 px-4 py-2 bg-primary hover:bg-gold-600 text-black rounded-lg font-medium transition-colors"
         >
           Новая игра
+        </button>
+        
+        <button
+          onClick={() => setGameStatus('checkmate')}
+          className="mt-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+        >
+          Тест: Мат
         </button>
       </div>
 
