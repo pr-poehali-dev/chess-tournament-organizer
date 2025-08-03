@@ -286,31 +286,62 @@ const Index = () => {
                 <div className="grid grid-cols-8 gap-1">
                   {Array.from({ length: 64 }, (_, i) => {
                     const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
+                    const row = Math.floor(i / 8);
+                    const col = i % 8;
+                    
+                    // Определяем фигуру и её цвет
+                    let piece = '';
+                    let isBlackPiece = false;
+                    
+                    // Черные фигуры (верхние ряды 0-1)
+                    if (row === 0) {
+                      isBlackPiece = true;
+                      if (col === 0 || col === 7) piece = '♜'; // Ладья
+                      if (col === 1 || col === 6) piece = '♞'; // Конь
+                      if (col === 2 || col === 5) piece = '♝'; // Слон
+                      if (col === 3) piece = '♛'; // Ферзь
+                      if (col === 4) piece = '♚'; // Король
+                    }
+                    if (row === 1) {
+                      isBlackPiece = true;
+                      piece = '♟'; // Пешка
+                    }
+                    
+                    // Белые фигуры (нижние ряды 6-7)
+                    if (row === 6) {
+                      isBlackPiece = false;
+                      piece = '♙'; // Пешка
+                    }
+                    if (row === 7) {
+                      isBlackPiece = false;
+                      if (col === 0 || col === 7) piece = '♖'; // Ладья
+                      if (col === 1 || col === 6) piece = '♘'; // Конь
+                      if (col === 2 || col === 5) piece = '♗'; // Слон
+                      if (col === 3) piece = '♕'; // Ферзь
+                      if (col === 4) piece = '♔'; // Король
+                    }
+                    
                     return (
                       <div
                         key={i}
                         className={`aspect-square ${
                           isLight ? 'bg-chess-light' : 'bg-chess-dark'
-                        } flex items-center justify-center text-4xl`}
+                        } flex items-center justify-center text-4xl font-bold`}
                       >
-                        {i === 0 && '♜'}
-                        {i === 1 && '♞'}
-                        {i === 2 && '♝'}
-                        {i === 3 && '♛'}
-                        {i === 4 && '♚'}
-                        {i === 5 && '♝'}
-                        {i === 6 && '♞'}
-                        {i === 7 && '♜'}
-                        {i >= 8 && i <= 15 && '♟'}
-                        {i >= 48 && i <= 55 && '♙'}
-                        {i === 56 && '♖'}
-                        {i === 57 && '♘'}
-                        {i === 58 && '♗'}
-                        {i === 59 && '♕'}
-                        {i === 60 && '♔'}
-                        {i === 61 && '♗'}
-                        {i === 62 && '♘'}
-                        {i === 63 && '♖'}
+                        {piece && (
+                          <span 
+                            className={`${
+                              isBlackPiece ? 'text-black' : 'text-white'
+                            } drop-shadow-lg`}
+                            style={{
+                              textShadow: isBlackPiece 
+                                ? '1px 1px 2px rgba(255,255,255,0.3)' 
+                                : '1px 1px 2px rgba(0,0,0,0.8)'
+                            }}
+                          >
+                            {piece}
+                          </span>
+                        )}
                       </div>
                     );
                   })}
