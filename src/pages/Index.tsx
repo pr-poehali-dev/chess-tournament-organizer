@@ -162,6 +162,7 @@ const Index = () => {
   const navigationItems = [
     { id: 'home', label: 'Главная', icon: 'Home' },
     { id: 'tournaments', label: 'Турниры', icon: 'Trophy' },
+    { id: 'results', label: 'Результаты', icon: 'Award' },
     { id: 'about', label: 'О центре', icon: 'Info' },
     { id: 'contacts', label: 'Контакты', icon: 'Phone' },
     { id: 'profile', label: isLoggedIn ? 'Личный кабинет' : 'Регистрация', icon: 'User' }
@@ -841,6 +842,186 @@ const Index = () => {
     </div>
   );
 
+  const renderResults = () => {
+    const [selectedTournament, setSelectedTournament] = useState<any>(null);
+
+    const completedTournaments = [
+      {
+        id: 1,
+        title: 'Весенний турнир "Юные мастера"',
+        date: '2025-03-15',
+        participants: 24,
+        status: 'Завершен',
+        winner: 'Иванов Максим Андреевич',
+        results: [
+          { place: 1, name: 'Иванов Максим Андреевич', points: 7, games: 8 },
+          { place: 2, name: 'Смирнова Анна Дмитриевна', points: 6.5, games: 8 },
+          { place: 3, name: 'Козлов Денис Сергеевич', points: 6, games: 8 },
+          { place: 4, name: 'Петрова София Алексеевна', points: 5.5, games: 8 },
+          { place: 5, name: 'Новиков Артем Владимирович', points: 5, games: 8 },
+          { place: 6, name: 'Волков Егор Михайлович', points: 4.5, games: 8 },
+          { place: 7, name: 'Лебедева Мария Александровна', points: 4, games: 8 },
+          { place: 8, name: 'Морозов Никита Дмитриевич', points: 3.5, games: 8 }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Зимний кубок',
+        date: '2025-01-20',
+        participants: 16,
+        status: 'Завершен',
+        winner: 'Козлов Денис Сергеевич',
+        results: [
+          { place: 1, name: 'Козлов Денис Сергеевич', points: 6, games: 7 },
+          { place: 2, name: 'Иванов Максим Андреевич', points: 5.5, games: 7 },
+          { place: 3, name: 'Петрова София Алексеевна', points: 5, games: 7 },
+          { place: 4, name: 'Смирнова Анна Дмитриевна', points: 4.5, games: 7 },
+          { place: 5, name: 'Новиков Артем Владимирович', points: 4, games: 7 },
+          { place: 6, name: 'Волков Егор Михайлович', points: 3.5, games: 7 }
+        ]
+      },
+      {
+        id: 3,
+        title: 'Осенний турнир',
+        date: '2024-10-12',
+        participants: 32,
+        status: 'Завершен',
+        winner: 'Смирнова Анна Дмитриевна',
+        results: [
+          { place: 1, name: 'Смирнова Анна Дмитриевна', points: 8, games: 9 },
+          { place: 2, name: 'Иванов Максим Андреевич', points: 7.5, games: 9 },
+          { place: 3, name: 'Козлов Денис Сергеевич', points: 7, games: 9 },
+          { place: 4, name: 'Новиков Артем Владимирович', points: 6.5, games: 9 },
+          { place: 5, name: 'Петрова София Алексеевна', points: 6, games: 9 }
+        ]
+      }
+    ];
+
+    if (selectedTournament) {
+      return (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedTournament(null)}
+              className="mb-4"
+            >
+              <Icon name="ArrowLeft" size={16} className="mr-2" />
+              Назад к результатам
+            </Button>
+            <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">
+              {selectedTournament.title}
+            </h1>
+            <div className="flex items-center space-x-4 text-gray-600">
+              <span>Дата: {formatDate(selectedTournament.date)}</span>
+              <span>•</span>
+              <span>Участников: {selectedTournament.participants}</span>
+              <span>•</span>
+              <span className="text-primary font-medium">Победитель: {selectedTournament.winner}</span>
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-heading">Итоговая таблица</CardTitle>
+              <CardDescription>Результаты турнира по швейцарской системе</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b-2">
+                      <th className="text-left py-3 px-4 font-semibold">Место</th>
+                      <th className="text-left py-3 px-4 font-semibold">ФИ участника</th>
+                      <th className="text-center py-3 px-4 font-semibold">Очки</th>
+                      <th className="text-center py-3 px-4 font-semibold">Партий</th>
+                      <th className="text-center py-3 px-4 font-semibold">Процент</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedTournament.results.map((result: any) => (
+                      <tr 
+                        key={result.place} 
+                        className={`border-b hover:bg-gray-50 ${result.place <= 3 ? 'bg-yellow-50' : ''}`}
+                      >
+                        <td className="py-3 px-4 font-semibold">
+                          {result.place <= 3 && (
+                            <Icon 
+                              name={result.place === 1 ? "Trophy" : result.place === 2 ? "Medal" : "Award"} 
+                              size={16} 
+                              className={`inline mr-2 ${result.place === 1 ? 'text-yellow-500' : result.place === 2 ? 'text-gray-400' : 'text-orange-600'}`} 
+                            />
+                          )}
+                          {result.place}
+                        </td>
+                        <td className="py-3 px-4">{result.name}</td>
+                        <td className="py-3 px-4 text-center font-semibold">{result.points}</td>
+                        <td className="py-3 px-4 text-center">{result.games}</td>
+                        <td className="py-3 px-4 text-center">
+                          {Math.round((result.points / result.games) * 100)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-heading font-bold text-gray-900 mb-4">Результаты турниров</h1>
+          <p className="text-gray-600 font-body">Архив проведенных турниров и их результаты</p>
+        </div>
+
+        <div className="grid gap-6">
+          {completedTournaments.map((tournament) => (
+            <Card key={tournament.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Icon name="Trophy" size={20} className="text-primary" />
+                      <h3 className="text-xl font-heading font-semibold">{tournament.title}</h3>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        {tournament.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center space-x-6 text-sm text-gray-600 mb-3">
+                      <span className="flex items-center">
+                        <Icon name="Calendar" size={16} className="mr-1" />
+                        {formatDate(tournament.date)}
+                      </span>
+                      <span className="flex items-center">
+                        <Icon name="Users" size={16} className="mr-1" />
+                        {tournament.participants} участников
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Icon name="Crown" size={16} className="text-yellow-500" />
+                      <span className="text-sm font-medium">Победитель: {tournament.winner}</span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => setSelectedTournament(tournament)}
+                    className="bg-primary hover:bg-gold-600 text-black ml-4"
+                  >
+                    Посмотреть протокол
+                    <Icon name="ChevronRight" size={16} className="ml-2" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderContacts = () => (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-12">
@@ -919,6 +1100,8 @@ const Index = () => {
         return renderHome();
       case 'tournaments':
         return renderTournaments();
+      case 'results':
+        return renderResults();
       case 'about':
         return renderAbout();
       case 'contacts':
