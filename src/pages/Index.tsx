@@ -1360,13 +1360,12 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="flex items-center mb-4">
                 <img 
                   src="https://cdn.poehali.dev/files/f7c22529-8aec-4d54-8fdf-65bbb1fc6ed7.png" 
                   alt="Мир шахмат" 
-                  className="h-8 w-auto filter brightness-0 invert"
+                  className="h-24 w-auto filter brightness-0 invert"
                 />
-                <span className="font-heading font-semibold">Мир шахмат</span>
               </div>
               <p className="text-gray-400 font-body">
                 Центр поддержки детского шахматного спорта
