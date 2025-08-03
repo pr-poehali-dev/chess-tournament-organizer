@@ -89,6 +89,7 @@ const Index = () => {
                 <span>{item.label}</span>
               </button>
             ))}
+            </div>
           </div>
         </div>
       </nav>
