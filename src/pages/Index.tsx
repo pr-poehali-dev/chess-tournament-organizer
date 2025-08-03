@@ -1367,9 +1367,6 @@ const Index = () => {
                   className="h-24 w-auto filter brightness-0 invert"
                 />
               </div>
-              <p className="text-gray-400 font-body">
-                Центр поддержки детского шахматного спорта
-              </p>
             </div>
             <div>
               <h4 className="font-heading font-semibold mb-4">Разделы</h4>
