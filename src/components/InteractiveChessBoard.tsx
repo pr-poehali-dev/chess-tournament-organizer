@@ -31,7 +31,7 @@ const InteractiveChessBoard = () => {
     if (piece.color === 'black') {
       const blackPieceImages = {
         king: 'https://cdn.poehali.dev/files/fe54b442-0d50-4c62-9a3a-9162fe8ff9be.png',
-        queen: '/img/6d74c891-38b0-429c-8ef3-37793297f3d1.jpg',
+        queen: 'https://cdn.poehali.dev/files/34a80d57-c305-4b04-a070-59ec331610e3.png',
         rook: 'https://cdn.poehali.dev/files/b16c7ce5-1bad-42e7-9ea1-956848e58cfa.png',
         bishop: 'https://cdn.poehali.dev/files/1f78a355-4edb-4b25-b35e-77e5f1a1c8eb.png',
         knight: 'https://cdn.poehali.dev/files/bca5e378-708d-4a2f-873b-30fc7a6939ea.png',
