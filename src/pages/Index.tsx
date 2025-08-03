@@ -855,14 +855,14 @@ const Index = () => {
         winner: 'Иванов Максим',
         rounds: 8,
         results: [
-          { place: 1, name: 'Иванов Максим', age: 9, points: 7, games: 8, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5, 1] },
-          { place: 2, name: 'Смирнова Анна', age: 10, points: 6.5, games: 8, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 0.5] },
-          { place: 3, name: 'Козлов Денис', age: 11, points: 6, games: 8, roundResults: [0.5, 1, 1, 0.5, 1, 0.5, 1, 0.5] },
-          { place: 4, name: 'Петрова София', age: 8, points: 5.5, games: 8, roundResults: [1, 0, 1, 1, 0.5, 1, 0, 1] },
-          { place: 5, name: 'Новиков Артем', age: 10, points: 5, games: 8, roundResults: [0, 1, 0.5, 0.5, 1, 0, 1, 1] },
-          { place: 6, name: 'Волков Егор', age: 9, points: 4.5, games: 8, roundResults: [0.5, 0.5, 0, 1, 0, 0.5, 1, 1] },
-          { place: 7, name: 'Лебедева Мария', age: 8, points: 4, games: 8, roundResults: [0, 0, 1, 0, 1, 0.5, 0.5, 1] },
-          { place: 8, name: 'Морозов Никита', age: 11, points: 3.5, games: 8, roundResults: [0, 0.5, 0, 0.5, 0, 1, 0.5, 1] }
+          { place: 1, name: 'Иванов Максим', age: 9, points: 7, games: 8, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5, 1], opponents: ['Морозов Никита', 'Лебедева Мария', 'Козлов Денис', 'Новиков Артем', 'Волков Егор', 'Петрова София', 'Смирнова Анна', 'Козлов Денис'] },
+          { place: 2, name: 'Смирнова Анна', age: 10, points: 6.5, games: 8, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 0.5], opponents: ['Лебедева Мария', 'Козлов Денис', 'Морозов Никита', 'Волков Егор', 'Петрова София', 'Новиков Артем', 'Иванов Максим', 'Лебедева Мария'] },
+          { place: 3, name: 'Козлов Денис', age: 11, points: 6, games: 8, roundResults: [0.5, 1, 1, 0.5, 1, 0.5, 1, 0.5], opponents: ['Петрова София', 'Смирнова Анна', 'Волков Егор', 'Лебедева Мария', 'Морозов Никита', 'Иванов Максим', 'Новиков Артем', 'Петрова София'] },
+          { place: 4, name: 'Петрова София', age: 8, points: 5.5, games: 8, roundResults: [1, 0, 1, 1, 0.5, 1, 0, 1], opponents: ['Козлов Денис', 'Новиков Артем', 'Лебедева Мария', 'Морозов Никита', 'Смирнова Анна', 'Иванов Максим', 'Волков Егор', 'Новиков Артем'] },
+          { place: 5, name: 'Новиков Артем', age: 10, points: 5, games: 8, roundResults: [0, 1, 0.5, 0.5, 1, 0, 1, 1], opponents: ['Волков Егор', 'Петрова София', 'Морозов Никита', 'Иванов Максим', 'Лебедева Мария', 'Смирнова Анна', 'Козлов Денис', 'Морозов Никита'] },
+          { place: 6, name: 'Волков Егор', age: 9, points: 4.5, games: 8, roundResults: [0.5, 0.5, 0, 1, 0, 0.5, 1, 1], opponents: ['Новиков Артем', 'Морозов Никита', 'Козлов Денис', 'Смирнова Анна', 'Иванов Максим', 'Лебедева Мария', 'Петрова София', 'Морозов Никита'] },
+          { place: 7, name: 'Лебедева Мария', age: 8, points: 4, games: 8, roundResults: [0, 0, 1, 0, 1, 0.5, 0.5, 1], opponents: ['Смирнова Анна', 'Иванов Максим', 'Петрова София', 'Козлов Денис', 'Новиков Артем', 'Волков Егор', 'Морозов Никита', 'Смирнова Анна'] },
+          { place: 8, name: 'Морозов Никита', age: 11, points: 3.5, games: 8, roundResults: [0, 0.5, 0, 0.5, 0, 1, 0.5, 1], opponents: ['Иванов Максим', 'Волков Егор', 'Смирнова Анна', 'Петрова София', 'Козлов Денис', 'Лебедева Мария', 'Волков Егор', 'Новиков Артем'] }
         ]
       },
       {
@@ -874,12 +874,12 @@ const Index = () => {
         winner: 'Козлов Денис',
         rounds: 7,
         results: [
-          { place: 1, name: 'Козлов Денис', age: 11, points: 6, games: 7, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5] },
-          { place: 2, name: 'Иванов Максим', age: 9, points: 5.5, games: 7, roundResults: [1, 0.5, 1, 0.5, 1, 0.5, 1] },
-          { place: 3, name: 'Петрова София', age: 8, points: 5, games: 7, roundResults: [0.5, 1, 1, 1, 0, 0.5, 1] },
-          { place: 4, name: 'Смирнова Анна', age: 10, points: 4.5, games: 7, roundResults: [0, 0.5, 0.5, 1, 1, 1, 0.5] },
-          { place: 5, name: 'Новиков Артем', age: 10, points: 4, games: 7, roundResults: [0.5, 0, 1, 0, 0.5, 1, 1] },
-          { place: 6, name: 'Волков Егор', age: 9, points: 3.5, games: 7, roundResults: [0, 1, 0, 0.5, 0.5, 0.5, 1] }
+          { place: 1, name: 'Козлов Денис', age: 11, points: 6, games: 7, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5], opponents: ['Волков Егор', 'Новиков Артем', 'Петрова София', 'Смирнова Анна', 'Иванов Максим', 'Петрова София', 'Новиков Артем'] },
+          { place: 2, name: 'Иванов Максим', age: 9, points: 5.5, games: 7, roundResults: [1, 0.5, 1, 0.5, 1, 0.5, 1], opponents: ['Новиков Артем', 'Петрова София', 'Волков Егор', 'Козлов Денис', 'Смирнова Анна', 'Козлов Денис', 'Смирнова Анна'] },
+          { place: 3, name: 'Петрова София', age: 8, points: 5, games: 7, roundResults: [0.5, 1, 1, 1, 0, 0.5, 1], opponents: ['Смирнова Анна', 'Иванов Максим', 'Козлов Денис', 'Новиков Артем', 'Волков Егор', 'Козлов Денис', 'Волков Егор'] },
+          { place: 4, name: 'Смирнова Анна', age: 10, points: 4.5, games: 7, roundResults: [0, 0.5, 0.5, 1, 1, 1, 0.5], opponents: ['Петрова София', 'Волков Егор', 'Новиков Артем', 'Козлов Денис', 'Иванов Максим', 'Новиков Артем', 'Иванов Максим'] },
+          { place: 5, name: 'Новиков Артем', age: 10, points: 4, games: 7, roundResults: [0.5, 0, 1, 0, 0.5, 1, 1], opponents: ['Иванов Максим', 'Козлов Денис', 'Смирнова Анна', 'Петрова София', 'Волков Егор', 'Смирнова Анна', 'Козлов Денис'] },
+          { place: 6, name: 'Волков Егор', age: 9, points: 3.5, games: 7, roundResults: [0, 1, 0, 0.5, 0.5, 0.5, 1], opponents: ['Козлов Денис', 'Смирнова Анна', 'Иванов Максим', 'Новиков Артем', 'Петрова София', 'Новиков Артем', 'Петрова София'] }
         ]
       },
       {
@@ -891,11 +891,11 @@ const Index = () => {
         winner: 'Смирнова Анна',
         rounds: 9,
         results: [
-          { place: 1, name: 'Смирнова Анна', age: 10, points: 8, games: 9, roundResults: [1, 1, 1, 0.5, 1, 1, 1, 1, 0.5] },
-          { place: 2, name: 'Иванов Максим', age: 9, points: 7.5, games: 9, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 1, 0.5] },
-          { place: 3, name: 'Козлов Денис', age: 11, points: 7, games: 9, roundResults: [0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 0.5] },
-          { place: 4, name: 'Новиков Артем', age: 10, points: 6.5, games: 9, roundResults: [1, 0, 0.5, 0.5, 1, 1, 1, 0.5, 1] },
-          { place: 5, name: 'Петрова София', age: 8, points: 6, games: 9, roundResults: [0, 1, 0.5, 1, 0, 1, 0.5, 1, 1] }
+          { place: 1, name: 'Смирнова Анна', age: 10, points: 8, games: 9, roundResults: [1, 1, 1, 0.5, 1, 1, 1, 1, 0.5], opponents: ['Петрова София', 'Новиков Артем', 'Козлов Денис', 'Иванов Максим', 'Петрова София', 'Новиков Артем', 'Козлов Денис', 'Иванов Максим', 'Петрова София'] },
+          { place: 2, name: 'Иванов Максим', age: 9, points: 7.5, games: 9, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 1, 0.5], opponents: ['Новиков Артем', 'Козлов Денис', 'Петрова София', 'Смирнова Анна', 'Козлов Денис', 'Петрова София', 'Новиков Артем', 'Смирнова Анна', 'Козлов Денис'] },
+          { place: 3, name: 'Козлов Денис', age: 11, points: 7, games: 9, roundResults: [0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 0.5], opponents: ['Петрова София', 'Иванов Максим', 'Смирнова Анна', 'Новиков Артем', 'Иванов Максим', 'Новиков Артем', 'Смирнова Анна', 'Петрова София', 'Иванов Максим'] },
+          { place: 4, name: 'Новиков Артем', age: 10, points: 6.5, games: 9, roundResults: [1, 0, 0.5, 0.5, 1, 1, 1, 0.5, 1], opponents: ['Иванов Максим', 'Смирнова Анна', 'Петрова София', 'Козлов Денис', 'Смирнова Анна', 'Козлов Денис', 'Иванов Максим', 'Петрова София', 'Козлов Денис'] },
+          { place: 5, name: 'Петрова София', age: 8, points: 6, games: 9, roundResults: [0, 1, 0.5, 1, 0, 1, 0.5, 1, 1], opponents: ['Смирнова Анна', 'Козлов Денис', 'Иванов Максим', 'Новиков Артем', 'Иванов Максим', 'Смирнова Анна', 'Козлов Денис', 'Новиков Артем', 'Смирнова Анна'] }
         ]
       }
     ];
@@ -967,11 +967,18 @@ const Index = () => {
                         <td className="py-3 px-4 text-center">{result.age} лет</td>
                         {result.roundResults.map((roundResult: number, roundIndex: number) => (
                           <td key={roundIndex} className="py-3 px-2 text-center text-sm font-medium">
-                            <span className={`inline-block w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                              roundResult === 1 ? 'bg-green-100 text-green-800' : 
-                              roundResult === 0.5 ? 'bg-yellow-100 text-yellow-800' : 
-                              'bg-red-100 text-red-800'
-                            }`}>
+                            <span 
+                              className={`inline-block w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-help ${
+                                roundResult === 1 ? 'bg-green-100 text-green-800' : 
+                                roundResult === 0.5 ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-red-100 text-red-800'
+                              }`}
+                              title={`Соперник: ${result.opponents[roundIndex]} | ${
+                                roundResult === 1 ? 'Победа' : 
+                                roundResult === 0.5 ? 'Ничья' : 
+                                'Поражение'
+                              }`}
+                            >
                               {roundResult === 0.5 ? '½' : roundResult}
                             </span>
                           </td>
