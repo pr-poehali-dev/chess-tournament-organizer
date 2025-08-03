@@ -29,7 +29,7 @@ export default {
 				background: '#FFFFFF',
 				foreground: '#000000',
 				primary: {
-					DEFAULT: '#FFD700',
+					DEFAULT: 'rgb(204, 163, 82)',
 					foreground: '#000000'
 				},
 				secondary: {
@@ -45,7 +45,7 @@ export default {
 					foreground: '#374151'
 				},
 				accent: {
-					DEFAULT: '#FFD700',
+					DEFAULT: 'rgb(204, 163, 82)',
 					foreground: '#000000'
 				},
 				popover: {
@@ -57,16 +57,16 @@ export default {
 					foreground: '#000000'
 				},
 				gold: {
-					50: '#FFFBEB',
-					100: '#FEF3C7',
-					200: '#FDE68A',
-					300: '#FCD34D',
-					400: '#FBBF24',
-					500: '#FFD700',
-					600: '#D69E2E',
-					700: '#B7791F',
-					800: '#92400E',
-					900: '#78350F'
+					50: '#F5F2E8',
+					100: '#EBE4D0',
+					200: '#D6C89F',
+					300: '#C2AD6F',
+					400: '#B8A464',
+					500: 'rgb(204, 163, 82)',
+					600: '#B8966B',
+					700: '#9A7D56',
+					800: '#7C6442',
+					900: '#5E4B2E'
 				},
 				chess: {
 					light: '#F0D9B5',
