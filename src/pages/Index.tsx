@@ -844,63 +844,205 @@ const Index = () => {
   );
 
   const renderResults = () => {
+    // Функция для генерации согласованных результатов турнира на основе реестра партий
+    const generateTournamentResults = (games: any[], players: string[]) => {
+      const results: any = {};
+      
+      // Инициализация результатов для каждого игрока
+      players.forEach(player => {
+        results[player] = {
+          roundResults: [],
+          opponents: [],
+          points: 0,
+          gamesPlayed: 0
+        };
+      });
+
+      // Обработка партий по турам
+      const maxRound = Math.max(...games.map(g => g.round));
+      
+      for (let round = 1; round <= maxRound; round++) {
+        const roundGames = games.filter(g => g.round === round);
+        
+        players.forEach(player => {
+          const game = roundGames.find(g => g.white === player || g.black === player);
+          
+          if (game) {
+            const isWhite = game.white === player;
+            const opponent = isWhite ? game.black : game.white;
+            let result = 0;
+            
+            if (game.result === '1-0') {
+              result = isWhite ? 1 : 0;
+            } else if (game.result === '0-1') {
+              result = isWhite ? 0 : 1;
+            } else if (game.result === '0.5-0.5') {
+              result = 0.5;
+            }
+            
+            results[player].roundResults.push(result);
+            results[player].opponents.push(opponent);
+            results[player].points += result;
+            results[player].gamesPlayed += 1;
+          } else {
+            // Если игрок не играл в этом туре (проходил)
+            results[player].roundResults.push('—');
+            results[player].opponents.push('Проход');
+          }
+        });
+      }
+      
+      return results;
+    };
 
     const completedTournaments = [
       {
         id: 1,
         title: 'Весенний турнир "Юные мастера"',
         date: '2025-03-15',
-        participants: 24,
+        participants: 8,
         status: 'Завершен',
         winner: 'Иванов Максим',
-        rounds: 8,
-        results: [
-          { place: 1, name: 'Иванов Максим', age: 9, points: 7, games: 8, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5, 1], opponents: ['Морозов Никита', 'Лебедева Мария', 'Козлов Денис', 'Новиков Артем', 'Волков Егор', 'Петрова София', 'Смирнова Анна', 'Козлов Денис'] },
-          { place: 2, name: 'Смирнова Анна', age: 10, points: 6.5, games: 8, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 0.5], opponents: ['Лебедева Мария', 'Козлов Денис', 'Морозов Никита', 'Волков Егор', 'Петрова София', 'Новиков Артем', 'Иванов Максим', 'Лебедева Мария'] },
-          { place: 3, name: 'Козлов Денис', age: 11, points: 6, games: 8, roundResults: [0.5, 1, 1, 0.5, 1, 0.5, 1, 0.5], opponents: ['Петрова София', 'Смирнова Анна', 'Волков Егор', 'Лебедева Мария', 'Морозов Никита', 'Иванов Максим', 'Новиков Артем', 'Петрова София'] },
-          { place: 4, name: 'Петрова София', age: 8, points: 5.5, games: 8, roundResults: [1, 0, 1, 1, 0.5, 1, 0, 1], opponents: ['Козлов Денис', 'Новиков Артем', 'Лебедева Мария', 'Морозов Никита', 'Смирнова Анна', 'Иванов Максим', 'Волков Егор', 'Новиков Артем'] },
-          { place: 5, name: 'Новиков Артем', age: 10, points: 5, games: 8, roundResults: [0, 1, 0.5, 0.5, 1, 0, 1, 1], opponents: ['Волков Егор', 'Петрова София', 'Морозов Никита', 'Иванов Максим', 'Лебедева Мария', 'Смирнова Анна', 'Козлов Денис', 'Морозов Никита'] },
-          { place: 6, name: 'Волков Егор', age: 9, points: 4.5, games: 8, roundResults: [0.5, 0.5, 0, 1, 0, 0.5, 1, 1], opponents: ['Новиков Артем', 'Морозов Никита', 'Козлов Денис', 'Смирнова Анна', 'Иванов Максим', 'Лебедева Мария', 'Петрова София', 'Морозов Никита'] },
-          { place: 7, name: 'Лебедева Мария', age: 8, points: 4, games: 8, roundResults: [0, 0, 1, 0, 1, 0.5, 0.5, 1], opponents: ['Смирнова Анна', 'Иванов Максим', 'Петрова София', 'Козлов Денис', 'Новиков Артем', 'Волков Егор', 'Морозов Никита', 'Смирнова Анна'] },
-          { place: 8, name: 'Морозов Никита', age: 11, points: 3.5, games: 8, roundResults: [0, 0.5, 0, 0.5, 0, 1, 0.5, 1], opponents: ['Иванов Максим', 'Волков Егор', 'Смирнова Анна', 'Петрова София', 'Козлов Денис', 'Лебедева Мария', 'Волков Егор', 'Новиков Артем'] }
+        rounds: 7,
+        players: ['Иванов Максим', 'Смирнова Анна', 'Козлов Денис', 'Петрова София', 'Новиков Артем', 'Волков Егор', 'Лебедева Мария', 'Морозов Никита'],
+        playerAges: {
+          'Иванов Максим': 9,
+          'Смирнова Анна': 10,
+          'Козлов Денис': 11,
+          'Петрова София': 8,
+          'Новиков Артем': 10,
+          'Волков Егор': 9,
+          'Лебедева Мария': 8,
+          'Морозов Никита': 11
+        },
+        games: [
+          // Тур 1
+          { round: 1, white: 'Иванов Максим', black: 'Морозов Никита', result: '1-0' },
+          { round: 1, white: 'Смирнова Анна', black: 'Лебедева Мария', result: '1-0' },
+          { round: 1, white: 'Козлов Денис', black: 'Петрова София', result: '0.5-0.5' },
+          { round: 1, white: 'Новиков Артем', black: 'Волков Егор', result: '0-1' },
+          
+          // Тур 2
+          { round: 2, white: 'Козлов Денис', black: 'Смирнова Анна', result: '0.5-0.5' },
+          { round: 2, white: 'Лебедева Мария', black: 'Иванов Максим', result: '0-1' },
+          { round: 2, white: 'Петрова София', black: 'Новиков Артем', result: '0-1' },
+          { round: 2, white: 'Морозов Никита', black: 'Волков Егор', result: '0.5-0.5' },
+          
+          // Тур 3
+          { round: 3, white: 'Иванов Максим', black: 'Козлов Денис', result: '0.5-0.5' },
+          { round: 3, white: 'Смирнова Анна', black: 'Морозов Никита', result: '1-0' },
+          { round: 3, white: 'Волков Егор', black: 'Козлов Денис', result: '0-1' },
+          { round: 3, white: 'Лебедева Мария', black: 'Петрова София', result: '0-1' },
+          
+          // Тур 4
+          { round: 4, white: 'Иванов Максим', black: 'Новиков Артем', result: '1-0' },
+          { round: 4, white: 'Смирнова Анна', black: 'Волков Егор', result: '1-0' },
+          { round: 4, white: 'Козлов Денис', black: 'Лебедева Мария', result: '0.5-0.5' },
+          { round: 4, white: 'Петрова София', black: 'Морозов Никита', result: '1-0' },
+          
+          // Тур 5
+          { round: 5, white: 'Иванов Максим', black: 'Волков Егор', result: '1-0' },
+          { round: 5, white: 'Смирнова Анна', black: 'Петрова София', result: '0.5-0.5' },
+          { round: 5, white: 'Козлов Денис', black: 'Морозов Никита', result: '1-0' },
+          { round: 5, white: 'Новиков Артем', black: 'Лебедева Мария', result: '1-0' },
+          
+          // Тур 6
+          { round: 6, white: 'Петрова София', black: 'Иванов Максим', result: '0-1' },
+          { round: 6, white: 'Новиков Артем', black: 'Смирнова Анна', result: '0-1' },
+          { round: 6, white: 'Козлов Денис', black: 'Иванов Максим', result: '0.5-0.5' },
+          { round: 6, white: 'Лебедева Мария', black: 'Волков Егор', result: '0.5-0.5' },
+          
+          // Тур 7
+          { round: 7, white: 'Смирнова Анна', black: 'Иванов Максим', result: '0.5-0.5' },
+          { round: 7, white: 'Козлов Денис', black: 'Новиков Артем', result: '1-0' },
+          { round: 7, white: 'Петрова София', black: 'Волков Егор', result: '0-1' },
+          { round: 7, white: 'Морозов Никита', black: 'Лебедева Мария', result: '0.5-0.5' }
         ]
       },
       {
         id: 2,
         title: 'Зимний кубок',
         date: '2025-01-20',
-        participants: 16,
+        participants: 6,
         status: 'Завершен',
         winner: 'Козлов Денис',
-        rounds: 7,
-        results: [
-          { place: 1, name: 'Козлов Денис', age: 11, points: 6, games: 7, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5], opponents: ['Волков Егор', 'Новиков Артем', 'Петрова София', 'Смирнова Анна', 'Иванов Максим', 'Петрова София', 'Новиков Артем'] },
-          { place: 2, name: 'Иванов Максим', age: 9, points: 5.5, games: 7, roundResults: [1, 0.5, 1, 0.5, 1, 0.5, 1], opponents: ['Новиков Артем', 'Петрова София', 'Волков Егор', 'Козлов Денис', 'Смирнова Анна', 'Козлов Денис', 'Смирнова Анна'] },
-          { place: 3, name: 'Петрова София', age: 8, points: 5, games: 7, roundResults: [0.5, 1, 1, 1, 0, 0.5, 1], opponents: ['Смирнова Анна', 'Иванов Максим', 'Козлов Денис', 'Новиков Артем', 'Волков Егор', 'Козлов Денис', 'Волков Егор'] },
-          { place: 4, name: 'Смирнова Анна', age: 10, points: 4.5, games: 7, roundResults: [0, 0.5, 0.5, 1, 1, 1, 0.5], opponents: ['Петрова София', 'Волков Егор', 'Новиков Артем', 'Козлов Денис', 'Иванов Максим', 'Новиков Артем', 'Иванов Максим'] },
-          { place: 5, name: 'Новиков Артем', age: 10, points: 4, games: 7, roundResults: [0.5, 0, 1, 0, 0.5, 1, 1], opponents: ['Иванов Максим', 'Козлов Денис', 'Смирнова Анна', 'Петрова София', 'Волков Егор', 'Смирнова Анна', 'Козлов Денис'] },
-          { place: 6, name: 'Волков Егор', age: 9, points: 3.5, games: 7, roundResults: [0, 1, 0, 0.5, 0.5, 0.5, 1], opponents: ['Козлов Денис', 'Смирнова Анна', 'Иванов Максим', 'Новиков Артем', 'Петрова София', 'Новиков Артем', 'Петрова София'] }
+        rounds: 5,
+        players: ['Козлов Денис', 'Иванов Максим', 'Петрова София', 'Смирнова Анна', 'Новиков Артем', 'Волков Егор'],
+        playerAges: {
+          'Козлов Денис': 11,
+          'Иванов Максим': 9,
+          'Петрова София': 8,
+          'Смирнова Анна': 10,
+          'Новиков Артем': 10,
+          'Волков Егор': 9
+        },
+        games: [
+          { round: 1, white: 'Козлов Денис', black: 'Волков Егор', result: '1-0' },
+          { round: 1, white: 'Иванов Максим', black: 'Новиков Артем', result: '1-0' },
+          { round: 1, white: 'Петрова София', black: 'Смирнова Анна', result: '0.5-0.5' },
+          
+          { round: 2, white: 'Козлов Денис', black: 'Иванов Максим', result: '1-0' },
+          { round: 2, white: 'Смирнова Анна', black: 'Волков Егор', result: '1-0' },
+          { round: 2, white: 'Петрова София', black: 'Новиков Артем', result: '1-0' },
+          
+          { round: 3, white: 'Козлов Денис', black: 'Смирнова Анна', result: '1-0' },
+          { round: 3, white: 'Петрова София', black: 'Иванов Максим', result: '0.5-0.5' },
+          { round: 3, white: 'Новиков Артем', black: 'Волков Егор', result: '1-0' },
+          
+          { round: 4, white: 'Козлов Денис', black: 'Петрова София', result: '0.5-0.5' },
+          { round: 4, white: 'Смирнова Анна', black: 'Иванов Максим', result: '0-1' },
+          { round: 4, white: 'Новиков Артем', black: 'Волков Егор', result: '1-0' },
+          
+          { round: 5, white: 'Козлов Денис', black: 'Новиков Артем', result: '1-0' },
+          { round: 5, white: 'Иванов Максим', black: 'Волков Егор', result: '1-0' },
+          { round: 5, white: 'Петрова София', black: 'Смирнова Анна', result: '1-0' }
         ]
       },
       {
         id: 3,
         title: 'Осенний турнир',
         date: '2024-10-12',
-        participants: 32,
+        participants: 4,
         status: 'Завершен',
         winner: 'Смирнова Анна',
-        rounds: 9,
-        results: [
-          { place: 1, name: 'Смирнова Анна', age: 10, points: 8, games: 9, roundResults: [1, 1, 1, 0.5, 1, 1, 1, 1, 0.5], opponents: ['Петрова София', 'Новиков Артем', 'Козлов Денис', 'Иванов Максим', 'Петрова София', 'Новиков Артем', 'Козлов Денис', 'Иванов Максим', 'Петрова София'] },
-          { place: 2, name: 'Иванов Максим', age: 9, points: 7.5, games: 9, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 1, 0.5], opponents: ['Новиков Артем', 'Козлов Денис', 'Петрова София', 'Смирнова Анна', 'Козлов Денис', 'Петрова София', 'Новиков Артем', 'Смирнова Анна', 'Козлов Денис'] },
-          { place: 3, name: 'Козлов Денис', age: 11, points: 7, games: 9, roundResults: [0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 0.5], opponents: ['Петрова София', 'Иванов Максим', 'Смирнова Анна', 'Новиков Артем', 'Иванов Максим', 'Новиков Артем', 'Смирнова Анна', 'Петрова София', 'Иванов Максим'] },
-          { place: 4, name: 'Новиков Артем', age: 10, points: 6.5, games: 9, roundResults: [1, 0, 0.5, 0.5, 1, 1, 1, 0.5, 1], opponents: ['Иванов Максим', 'Смирнова Анна', 'Петрова София', 'Козлов Денис', 'Смирнова Анна', 'Козлов Денис', 'Иванов Максим', 'Петрова София', 'Козлов Денис'] },
-          { place: 5, name: 'Петрова София', age: 8, points: 6, games: 9, roundResults: [0, 1, 0.5, 1, 0, 1, 0.5, 1, 1], opponents: ['Смирнова Анна', 'Козлов Денис', 'Иванов Максим', 'Новиков Артем', 'Иванов Максим', 'Смирнова Анна', 'Козлов Денис', 'Новиков Артем', 'Смирнова Анна'] }
+        rounds: 3,
+        players: ['Смирнова Анна', 'Иванов Максим', 'Козлов Денис', 'Петрова София'],
+        playerAges: {
+          'Смирнова Анна': 10,
+          'Иванов Максим': 9,
+          'Козлов Денис': 11,
+          'Петрова София': 8
+        },
+        games: [
+          { round: 1, white: 'Смирнова Анна', black: 'Петрова София', result: '1-0' },
+          { round: 1, white: 'Иванов Максим', black: 'Козлов Денис', result: '0.5-0.5' },
+          
+          { round: 2, white: 'Смирнова Анна', black: 'Козлов Денис', result: '1-0' },
+          { round: 2, white: 'Иванов Максим', black: 'Петрова София', result: '1-0' },
+          
+          { round: 3, white: 'Смирнова Анна', black: 'Иванов Максим', result: '0.5-0.5' },
+          { round: 3, white: 'Козлов Денис', black: 'Петрова София', result: '1-0' }
         ]
       }
     ];
 
     if (selectedTournament) {
+      // Генерируем согласованные результаты на основе реестра партий
+      const tournamentResults = generateTournamentResults(selectedTournament.games, selectedTournament.players);
+      
+      // Сортируем участников по очкам для определения мест
+      const sortedPlayers = selectedTournament.players
+        .map(player => ({
+          name: player,
+          age: selectedTournament.playerAges[player],
+          points: tournamentResults[player].points,
+          games: tournamentResults[player].gamesPlayed,
+          roundResults: tournamentResults[player].roundResults,
+          opponents: tournamentResults[player].opponents
+        }))
+        .sort((a, b) => b.points - a.points)
+        .map((player, index) => ({ ...player, place: index + 1 }));
+
       return (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
@@ -920,14 +1062,14 @@ const Index = () => {
               <span>•</span>
               <span>Участников: {selectedTournament.participants}</span>
               <span>•</span>
-              <span className="text-primary font-medium">Победитель: {selectedTournament.winner}</span>
+              <span className="text-primary font-medium">Победитель: {sortedPlayers[0].name}</span>
             </div>
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle className="font-heading">Итоговая таблица</CardTitle>
-              <CardDescription>Результаты турнира по швейцарской системе</CardDescription>
+              <CardDescription>Результаты турнира по швейцарской системе (данные согласованы с реестром партий)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -948,7 +1090,7 @@ const Index = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedTournament.results.map((result: any) => (
+                    {sortedPlayers.map((result: any) => (
                       <tr 
                         key={result.place} 
                         className={`border-b hover:bg-gray-50 ${result.place <= 3 ? 'bg-yellow-50' : ''}`}
@@ -965,28 +1107,32 @@ const Index = () => {
                         </td>
                         <td className="py-3 px-4">{result.name}</td>
                         <td className="py-3 px-4 text-center">{result.age} лет</td>
-                        {result.roundResults.map((roundResult: number, roundIndex: number) => (
+                        {result.roundResults.map((roundResult: any, roundIndex: number) => (
                           <td key={roundIndex} className="py-3 px-2 text-center text-sm font-medium">
-                            <span 
-                              className={`inline-block w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-help ${
-                                roundResult === 1 ? 'bg-green-100 text-green-800' : 
-                                roundResult === 0.5 ? 'bg-yellow-100 text-yellow-800' : 
-                                'bg-red-100 text-red-800'
-                              }`}
-                              title={`Соперник: ${result.opponents[roundIndex]} | ${
-                                roundResult === 1 ? 'Победа' : 
-                                roundResult === 0.5 ? 'Ничья' : 
-                                'Поражение'
-                              }`}
-                            >
-                              {roundResult === 0.5 ? '½' : roundResult}
-                            </span>
+                            {roundResult === '—' ? (
+                              <span className="text-gray-400">—</span>
+                            ) : (
+                              <span 
+                                className={`inline-block w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-help ${
+                                  roundResult === 1 ? 'bg-green-100 text-green-800' : 
+                                  roundResult === 0.5 ? 'bg-yellow-100 text-yellow-800' : 
+                                  'bg-red-100 text-red-800'
+                                }`}
+                                title={`Соперник: ${result.opponents[roundIndex]} | ${
+                                  roundResult === 1 ? 'Победа' : 
+                                  roundResult === 0.5 ? 'Ничья' : 
+                                  'Поражение'
+                                }`}
+                              >
+                                {roundResult === 0.5 ? '½' : roundResult}
+                              </span>
+                            )}
                           </td>
                         ))}
                         <td className="py-3 px-4 text-center font-semibold">{result.points}</td>
                         <td className="py-3 px-4 text-center">{result.games}</td>
                         <td className="py-3 px-4 text-center">
-                          {Math.round((result.points / result.games) * 100)}%
+                          {result.games > 0 ? Math.round((result.points / result.games) * 100) : 0}%
                         </td>
                       </tr>
                     ))}
