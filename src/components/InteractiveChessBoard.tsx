@@ -195,6 +195,135 @@ const InteractiveChessBoard = () => {
     return !isKingInCheck(testBoard, piece.color);
   };
 
+  // Получить сырые ходы без проверки на легальность (для внутренних проверок)
+  const getRawMoves = (row: number, col: number): Position[] => {
+    const piece = board[row][col];
+    if (!piece) return [];
+
+    const moves: Position[] = [];
+
+    switch (piece.type) {
+      case 'pawn':
+        return getPawnMoves(row, col, piece);
+        
+      case 'rook':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'knight':
+        const knightMoves = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
+        for (const [dr, dc] of knightMoves) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+
+      case 'bishop':
+        for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'queen':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'king':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+    }
+
+    return moves;
+  };
+
+  // Получить все возможные ходы для игрока (учитывая шах)
+  const getAllPossibleMovesForPlayer = (color: 'white' | 'black'): Array<{from: Position, to: Position}> => {
+    const allMoves: Array<{from: Position, to: Position}> = [];
+    
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece && piece.color === color) {
+          const rawMoves = getRawMoves(row, col);
+          // Фильтруем только легальные ходы
+          const legalMoves = rawMoves.filter(move => isMoveLegal(row, col, move.row, move.col));
+          legalMoves.forEach(move => {
+            allMoves.push({
+              from: { row, col },
+              to: move
+            });
+          });
+        }
+      }
+    }
+    
+    return allMoves;
+  };
+
   // Проверка возможных ходов для пешки
   const getPawnMoves = (row: number, col: number, piece: ChessPiece): Position[] => {
     const moves: Position[] = [];
@@ -228,117 +357,18 @@ const InteractiveChessBoard = () => {
 
   // Получить возможные ходы для фигуры
   const getPossibleMoves = (row: number, col: number): Position[] => {
-    const piece = board[row][col];
-    if (!piece) return [];
-
-    const moves: Position[] = [];
-
-    switch (piece.type) {
-      case 'pawn':
-        return getPawnMoves(row, col, piece);
-        
-      case 'rook':
-        // Горизонтальные и вертикальные ходы
-        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-          for (let i = 1; i < 8; i++) {
-            const newRow = row + dr * i;
-            const newCol = col + dc * i;
-            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
-            
-            const targetPiece = board[newRow][newCol];
-            if (!targetPiece) {
-              moves.push({ row: newRow, col: newCol });
-            } else {
-              if (targetPiece.color !== piece.color) {
-                moves.push({ row: newRow, col: newCol });
-              }
-              break;
-            }
-          }
-        }
-        break;
-
-      case 'knight':
-        // Ходы коня
-        const knightMoves = [
-          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
-          [1, -2], [1, 2], [2, -1], [2, 1]
-        ];
-        for (const [dr, dc] of knightMoves) {
-          const newRow = row + dr;
-          const newCol = col + dc;
-          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
-            const targetPiece = board[newRow][newCol];
-            if (!targetPiece || targetPiece.color !== piece.color) {
-              moves.push({ row: newRow, col: newCol });
-            }
-          }
-        }
-        break;
-
-      case 'bishop':
-        // Диагональные ходы
-        for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-          for (let i = 1; i < 8; i++) {
-            const newRow = row + dr * i;
-            const newCol = col + dc * i;
-            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
-            
-            const targetPiece = board[newRow][newCol];
-            if (!targetPiece) {
-              moves.push({ row: newRow, col: newCol });
-            } else {
-              if (targetPiece.color !== piece.color) {
-                moves.push({ row: newRow, col: newCol });
-              }
-              break;
-            }
-          }
-        }
-        break;
-
-      case 'queen':
-        // Комбинация ладьи и слона
-        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-          for (let i = 1; i < 8; i++) {
-            const newRow = row + dr * i;
-            const newCol = col + dc * i;
-            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
-            
-            const targetPiece = board[newRow][newCol];
-            if (!targetPiece) {
-              moves.push({ row: newRow, col: newCol });
-            } else {
-              if (targetPiece.color !== piece.color) {
-                moves.push({ row: newRow, col: newCol });
-              }
-              break;
-            }
-          }
-        }
-        break;
-
-      case 'king':
-        // Ходы короля (на одну клетку в любую сторону)
-        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-          const newRow = row + dr;
-          const newCol = col + dc;
-          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
-            const targetPiece = board[newRow][newCol];
-            if (!targetPiece || targetPiece.color !== piece.color) {
-              moves.push({ row: newRow, col: newCol });
-            }
-          }
-        }
-        break;
-    }
-
+    const rawMoves = getRawMoves(row, col);
     // Фильтруем только легальные ходы (не оставляющие короля под шахом)
-    return moves.filter(move => isMoveLegal(row, col, move.row, move.col));
+    return rawMoves.filter(move => isMoveLegal(row, col, move.row, move.col));
   };
 
   // Обработка клика по клетке
   const handleSquareClick = (row: number, col: number) => {
+    // Блокируем ходы при мате или пате
+    if (gameStatus === 'checkmate' || gameStatus === 'stalemate') {
+      return;
+    }
+    
     const piece = board[row][col];
 
     // Если выбрана фигура и кликаем на возможный ход
@@ -358,15 +388,26 @@ const InteractiveChessBoard = () => {
       setPossibleMoves([]);
       setCurrentPlayer(nextPlayer);
       
+      // Проверяем, есть ли у следующего игрока легальные ходы
+      const nextPlayerMoves = getAllPossibleMovesForPlayer(nextPlayer);
+      
       // Обновляем статус игры
       if (isNextPlayerInCheck) {
-        setGameStatus('check');
+        if (nextPlayerMoves.length === 0) {
+          setGameStatus('checkmate');
+        } else {
+          setGameStatus('check');
+        }
         setIsInCheck({
           white: nextPlayer === 'white',
           black: nextPlayer === 'black'
         });
       } else {
-        setGameStatus('playing');
+        if (nextPlayerMoves.length === 0) {
+          setGameStatus('stalemate');
+        } else {
+          setGameStatus('playing');
+        }
         setIsInCheck({ white: false, black: false });
       }
       
@@ -418,11 +459,29 @@ const InteractiveChessBoard = () => {
           </div>
         )}
         
-        <p className="text-lg font-body">
-          Ход: <span className={`font-semibold ${gameStatus === 'check' ? 'text-red-600' : 'text-primary'}`}>
-            {currentPlayer === 'white' ? 'Белых' : 'Черных'}
-          </span>
-        </p>
+        {gameStatus === 'checkmate' && (
+          <div className="mb-3 p-3 bg-red-200 border border-red-400 rounded-lg">
+            <p className="text-red-800 font-bold text-lg">
+              🏁 МАТ! {currentPlayer === 'white' ? 'Черные' : 'Белые'} победили!
+            </p>
+          </div>
+        )}
+        
+        {gameStatus === 'stalemate' && (
+          <div className="mb-3 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
+            <p className="text-yellow-800 font-bold text-lg">
+              🤝 ПАТ! Ничья!
+            </p>
+          </div>
+        )}
+        
+        {(gameStatus === 'checkmate' || gameStatus === 'stalemate') ? null : (
+          <p className="text-lg font-body">
+            Ход: <span className={`font-semibold ${gameStatus === 'check' ? 'text-red-600' : 'text-primary'}`}>
+              {currentPlayer === 'white' ? 'Белых' : 'Черных'}
+            </span>
+          </p>
+        )}
         
         <button
           onClick={resetGame}
