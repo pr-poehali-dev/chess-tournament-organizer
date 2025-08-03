@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
 import { UserData } from '@/types/user';
@@ -21,6 +22,7 @@ const Index = () => {
   const [registrationData, setRegistrationData] = useState({
     fullName: '',
     dateOfBirth: '',
+    gender: 'male' as 'male' | 'female',
     fcrId: '',
     educationalInstitution: '',
     trainerName: '',
@@ -37,6 +39,7 @@ const Index = () => {
       id: '1',
       fullName: 'Иванов Максим Андреевич',
       dateOfBirth: '2015-03-15',
+      gender: 'male',
       fcrId: '12345678',
       educationalInstitution: 'МБОУ СОШ №1',
       trainerName: 'Петров Сергей Владимирович',
@@ -49,6 +52,7 @@ const Index = () => {
       id: '2',
       fullName: 'Смирнова Анна Дмитриевна',
       dateOfBirth: '2014-07-22',
+      gender: 'female',
       fcrId: '87654321',
       educationalInstitution: 'МБОУ Гимназия №5',
       trainerName: 'Козлов Александр Игоревич',
@@ -61,6 +65,7 @@ const Index = () => {
       id: '3',
       fullName: 'Козлов Денис Сергеевич',
       dateOfBirth: '2013-11-08',
+      gender: 'male',
       fcrId: '11223344',
       educationalInstitution: 'МБОУ Лицей №3',
       trainerName: 'Волкова Елена Анатольевна',
@@ -73,6 +78,7 @@ const Index = () => {
       id: '4',
       fullName: 'Петрова София Алексеевна',
       dateOfBirth: '2016-05-12',
+      gender: 'female',
       fcrId: '44556677',
       educationalInstitution: 'МБОУ СОШ №7',
       trainerName: 'Морозов Дмитрий Петрович',
@@ -85,6 +91,7 @@ const Index = () => {
       id: '5',
       fullName: 'Новиков Артем Владимирович',
       dateOfBirth: '2014-09-30',
+      gender: 'male',
       fcrId: '99887766',
       educationalInstitution: 'МАОУ СОШ №12',
       trainerName: 'Лебедев Михаил Анатольевич',
@@ -523,6 +530,21 @@ const Index = () => {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="gender">Пол</Label>
+                    <Select 
+                      value={registrationData.gender} 
+                      onValueChange={(value) => setRegistrationData({...registrationData, gender: value as 'male' | 'female'})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите пол" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Мужской</SelectItem>
+                        <SelectItem value="female">Женский</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <Label htmlFor="fcrId">ID ФШР</Label>
                     <Input 
                       id="fcrId" 
@@ -655,6 +677,10 @@ const Index = () => {
                   <div className="text-xs">
                     <div className="text-gray-600 mb-1">Дата рождения:</div>
                     <div className="font-medium">{formatDate(currentUser?.dateOfBirth)}</div>
+                  </div>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Пол:</div>
+                    <div className="font-medium">{currentUser?.gender === 'male' ? 'Мужской' : 'Женский'}</div>
                   </div>
                   <div className="text-xs">
                     <div className="text-gray-600 mb-1">Учебное заведение:</div>

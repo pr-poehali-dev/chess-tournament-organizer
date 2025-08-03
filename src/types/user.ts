@@ -2,6 +2,7 @@ export interface UserData {
   id: string;
   fullName: string;
   dateOfBirth: string;
+  gender: 'male' | 'female';
   fcrId: string; // ID ФШР
   educationalInstitution: string;
   trainerName: string;
