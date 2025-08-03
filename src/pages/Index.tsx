@@ -1110,7 +1110,12 @@ const Index = () => {
                         {result.roundResults.map((roundResult: any, roundIndex: number) => (
                           <td key={roundIndex} className="py-3 px-2 text-center text-sm font-medium">
                             {roundResult === '—' ? (
-                              <span className="text-gray-400">—</span>
+                              <span 
+                                className="text-gray-400" 
+                                title={`Тур ${roundIndex + 1} | Проход`}
+                              >
+                                —
+                              </span>
                             ) : (
                               <span 
                                 className={`inline-block w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold cursor-help ${
@@ -1118,7 +1123,7 @@ const Index = () => {
                                   roundResult === 0.5 ? 'bg-yellow-100 text-yellow-800' : 
                                   'bg-red-100 text-red-800'
                                 }`}
-                                title={`Соперник: ${result.opponents[roundIndex]} | ${
+                                title={`Тур ${roundIndex + 1} | Соперник: ${result.opponents && result.opponents[roundIndex] ? result.opponents[roundIndex] : 'Проход'} | ${
                                   roundResult === 1 ? 'Победа' : 
                                   roundResult === 0.5 ? 'Ничья' : 
                                   'Поражение'
