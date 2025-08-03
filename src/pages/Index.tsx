@@ -10,12 +10,121 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
+import { UserData } from '@/types/user';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('participant'); // 'participant' | 'admin'
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const [registrationData, setRegistrationData] = useState({
+    fullName: '',
+    dateOfBirth: '',
+    fcrId: '',
+    educationalInstitution: '',
+    trainerName: '',
+    representativeEmail: '',
+    representativePhone: '',
+    userType: 'child' as 'child' | 'parent' | 'trainer',
+    password: ''
+  });
+
+  // Тестовые аккаунты
+  const testUsers: UserData[] = [
+    {
+      id: '1',
+      fullName: 'Иванов Максим Андреевич',
+      dateOfBirth: '2015-03-15',
+      fcrId: '12345678',
+      educationalInstitution: 'МБОУ СОШ №1',
+      trainerName: 'Петров Сергей Владимирович',
+      representativeEmail: 'ivanova@email.com',
+      representativePhone: '+7 (999) 123-45-67',
+      userType: 'child',
+      registrationDate: '2024-01-15'
+    },
+    {
+      id: '2',
+      fullName: 'Смирнова Анна Дмитриевна',
+      dateOfBirth: '2014-07-22',
+      fcrId: '87654321',
+      educationalInstitution: 'МБОУ Гимназия №5',
+      trainerName: 'Козлов Александр Игоревич',
+      representativeEmail: 'smirnov@email.com',
+      representativePhone: '+7 (999) 234-56-78',
+      userType: 'child',
+      registrationDate: '2024-02-10'
+    },
+    {
+      id: '3',
+      fullName: 'Козлов Денис Сергеевич',
+      dateOfBirth: '2013-11-08',
+      fcrId: '11223344',
+      educationalInstitution: 'МБОУ Лицей №3',
+      trainerName: 'Волкова Елена Анатольевна',
+      representativeEmail: 'kozlova@email.com',
+      representativePhone: '+7 (999) 345-67-89',
+      userType: 'child',
+      registrationDate: '2024-01-28'
+    },
+    {
+      id: '4',
+      fullName: 'Петрова София Алексеевна',
+      dateOfBirth: '2016-05-12',
+      fcrId: '44556677',
+      educationalInstitution: 'МБОУ СОШ №7',
+      trainerName: 'Морозов Дмитрий Петрович',
+      representativeEmail: 'petrova@email.com',
+      representativePhone: '+7 (999) 456-78-90',
+      userType: 'child',
+      registrationDate: '2024-03-05'
+    },
+    {
+      id: '5',
+      fullName: 'Новиков Артем Владимирович',
+      dateOfBirth: '2014-09-30',
+      fcrId: '99887766',
+      educationalInstitution: 'МАОУ СОШ №12',
+      trainerName: 'Лебедев Михаил Анатольевич',
+      representativeEmail: 'novikova@email.com',
+      representativePhone: '+7 (999) 567-89-01',
+      userType: 'child',
+      registrationDate: '2024-02-20'
+    }
+  ];
+
+  const handleRegistration = () => {
+    const newUser: UserData = {
+      id: Date.now().toString(),
+      ...registrationData,
+      registrationDate: new Date().toISOString().split('T')[0]
+    };
+    setCurrentUser(newUser);
+    setIsLoggedIn(true);
+  };
+
+  const handleTestLogin = (user: UserData) => {
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+  };
+
+  const calculateAge = (birthDate?: string) => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Не указана';
+    return new Date(dateString).toLocaleDateString('ru-RU');
+  };
 
   const upcomingTournaments = [
     {
@@ -394,29 +503,103 @@ const Index = () => {
                 </TabsContent>
                 <TabsContent value="register" className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Имя ребенка</Label>
-                    <Input id="name" placeholder="Имя" />
+                    <Label htmlFor="fullName">ФИО</Label>
+                    <Input 
+                      id="fullName" 
+                      placeholder="Иванов Иван Иванович" 
+                      value={registrationData.fullName}
+                      onChange={(e) => setRegistrationData({...registrationData, fullName: e.target.value})}
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="age">Возраст</Label>
-                    <Input id="age" type="number" placeholder="8" />
+                    <Label htmlFor="dateOfBirth">Дата рождения</Label>
+                    <Input 
+                      id="dateOfBirth" 
+                      type="date" 
+                      value={registrationData.dateOfBirth}
+                      onChange={(e) => setRegistrationData({...registrationData, dateOfBirth: e.target.value})}
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="parent-email">Email родителя</Label>
-                    <Input id="parent-email" type="email" placeholder="parent@email.com" />
+                    <Label htmlFor="fcrId">ID ФШР</Label>
+                    <Input 
+                      id="fcrId" 
+                      placeholder="12345678" 
+                      value={registrationData.fcrId}
+                      onChange={(e) => setRegistrationData({...registrationData, fcrId: e.target.value})}
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="new-password">Пароль</Label>
-                    <Input id="new-password" type="password" />
+                    <Label htmlFor="educationalInstitution">Наименование учебного заведения</Label>
+                    <Input 
+                      id="educationalInstitution" 
+                      placeholder="МБОУ СОШ №1" 
+                      value={registrationData.educationalInstitution}
+                      onChange={(e) => setRegistrationData({...registrationData, educationalInstitution: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="trainerName">ФИО тренера</Label>
+                    <Input 
+                      id="trainerName" 
+                      placeholder="Петров Петр Петрович" 
+                      value={registrationData.trainerName}
+                      onChange={(e) => setRegistrationData({...registrationData, trainerName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="representativeEmail">Электронная почта представителя</Label>
+                    <Input 
+                      id="representativeEmail" 
+                      type="email" 
+                      placeholder="parent@email.com" 
+                      value={registrationData.representativeEmail}
+                      onChange={(e) => setRegistrationData({...registrationData, representativeEmail: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="representativePhone">Телефон представителя</Label>
+                    <Input 
+                      id="representativePhone" 
+                      type="tel" 
+                      placeholder="+7 (999) 123-45-67" 
+                      value={registrationData.representativePhone}
+                      onChange={(e) => setRegistrationData({...registrationData, representativePhone: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Пароль</Label>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      value={registrationData.password}
+                      onChange={(e) => setRegistrationData({...registrationData, password: e.target.value})}
+                    />
                   </div>
                   <Button 
                     className="w-full bg-primary hover:bg-gold-600 text-black"
-                    onClick={() => setIsLoggedIn(true)}
+                    onClick={handleRegistration}
                   >
                     Зарегистрироваться
                   </Button>
                 </TabsContent>
               </Tabs>
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-4">Тестовые аккаунты:</h3>
+                <div className="space-y-2">
+                  {testUsers.map((user) => (
+                    <Button
+                      key={user.id}
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => handleTestLogin(user)}
+                    >
+                      {user.fullName} ({calculateAge(user.dateOfBirth)} лет)
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -436,7 +619,10 @@ const Index = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => setIsLoggedIn(false)}
+              onClick={() => {
+                setIsLoggedIn(false);
+                setCurrentUser(null);
+              }}
             >
               Выйти
             </Button>
@@ -450,29 +636,43 @@ const Index = () => {
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src="" />
-                    <AvatarFallback className="bg-primary text-black text-lg">МА</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-black text-lg">
+                      {currentUser?.fullName.split(' ').map(n => n[0]).join('').slice(0, 2) || 'У'}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="font-heading">Максим Андреев</CardTitle>
+                    <CardTitle className="font-heading">{currentUser?.fullName || 'Пользователь'}</CardTitle>
                     <CardDescription className="font-body">
-                      {userRole === 'admin' ? 'Администратор' : '9 лет • Новичок'}
+                      {userRole === 'admin' ? 'Администратор' : `${calculateAge(currentUser?.dateOfBirth)} лет • ID ФШР: ${currentUser?.fcrId}`}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="text-sm">
-                    <span className="text-gray-600">Турниров сыграно:</span>
-                    <span className="font-medium ml-2">5</span>
+                    <span className="text-gray-600">Дата рождения:</span>
+                    <span className="font-medium ml-2">{formatDate(currentUser?.dateOfBirth)}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-gray-600">Побед:</span>
-                    <span className="font-medium ml-2">3</span>
+                    <span className="text-gray-600">Учебное заведение:</span>
+                    <span className="font-medium ml-2">{currentUser?.educationalInstitution}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-gray-600">Рейтинг:</span>
-                    <span className="font-medium ml-2">1200</span>
+                    <span className="text-gray-600">Тренер:</span>
+                    <span className="font-medium ml-2">{currentUser?.trainerName}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Email представителя:</span>
+                    <span className="font-medium ml-2">{currentUser?.representativeEmail}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Телефон представителя:</span>
+                    <span className="font-medium ml-2">{currentUser?.representativePhone}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Дата регистрации:</span>
+                    <span className="font-medium ml-2">{formatDate(currentUser?.registrationDate)}</span>
                   </div>
                 </div>
               </CardContent>
