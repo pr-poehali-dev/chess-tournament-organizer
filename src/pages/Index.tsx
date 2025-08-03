@@ -629,8 +629,8 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div>
+        <div className="grid lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <div className="flex items-center space-x-4">
@@ -650,36 +650,36 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="text-sm">
-                    <span className="text-gray-600">Дата рождения:</span>
-                    <span className="font-medium ml-2">{formatDate(currentUser?.dateOfBirth)}</span>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Дата рождения:</div>
+                    <div className="font-medium">{formatDate(currentUser?.dateOfBirth)}</div>
                   </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Учебное заведение:</span>
-                    <span className="font-medium ml-2">{currentUser?.educationalInstitution}</span>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Учебное заведение:</div>
+                    <div className="font-medium break-words">{currentUser?.educationalInstitution}</div>
                   </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Тренер:</span>
-                    <span className="font-medium ml-2">{currentUser?.trainerName}</span>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Тренер:</div>
+                    <div className="font-medium break-words">{currentUser?.trainerName}</div>
                   </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Email представителя:</span>
-                    <span className="font-medium ml-2">{currentUser?.representativeEmail}</span>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Email представителя:</div>
+                    <div className="font-medium break-all">{currentUser?.representativeEmail}</div>
                   </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Телефон представителя:</span>
-                    <span className="font-medium ml-2">{currentUser?.representativePhone}</span>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Телефон представителя:</div>
+                    <div className="font-medium">{currentUser?.representativePhone}</div>
                   </div>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Дата регистрации:</span>
-                    <span className="font-medium ml-2">{formatDate(currentUser?.registrationDate)}</span>
+                  <div className="text-xs">
+                    <div className="text-gray-600 mb-1">Дата регистрации:</div>
+                    <div className="font-medium">{formatDate(currentUser?.registrationDate)}</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             {userRole === 'admin' ? (
               <div className="space-y-6">
                 <Card>
