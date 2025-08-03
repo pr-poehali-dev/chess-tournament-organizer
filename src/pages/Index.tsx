@@ -853,15 +853,16 @@ const Index = () => {
         participants: 24,
         status: 'Завершен',
         winner: 'Иванов Максим',
+        rounds: 8,
         results: [
-          { place: 1, name: 'Иванов Максим', age: 9, points: 7, games: 8 },
-          { place: 2, name: 'Смирнова Анна', age: 10, points: 6.5, games: 8 },
-          { place: 3, name: 'Козлов Денис', age: 11, points: 6, games: 8 },
-          { place: 4, name: 'Петрова София', age: 8, points: 5.5, games: 8 },
-          { place: 5, name: 'Новиков Артем', age: 10, points: 5, games: 8 },
-          { place: 6, name: 'Волков Егор', age: 9, points: 4.5, games: 8 },
-          { place: 7, name: 'Лебедева Мария', age: 8, points: 4, games: 8 },
-          { place: 8, name: 'Морозов Никита', age: 11, points: 3.5, games: 8 }
+          { place: 1, name: 'Иванов Максим', age: 9, points: 7, games: 8, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5, 1] },
+          { place: 2, name: 'Смирнова Анна', age: 10, points: 6.5, games: 8, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 0.5] },
+          { place: 3, name: 'Козлов Денис', age: 11, points: 6, games: 8, roundResults: [0.5, 1, 1, 0.5, 1, 0.5, 1, 0.5] },
+          { place: 4, name: 'Петрова София', age: 8, points: 5.5, games: 8, roundResults: [1, 0, 1, 1, 0.5, 1, 0, 1] },
+          { place: 5, name: 'Новиков Артем', age: 10, points: 5, games: 8, roundResults: [0, 1, 0.5, 0.5, 1, 0, 1, 1] },
+          { place: 6, name: 'Волков Егор', age: 9, points: 4.5, games: 8, roundResults: [0.5, 0.5, 0, 1, 0, 0.5, 1, 1] },
+          { place: 7, name: 'Лебедева Мария', age: 8, points: 4, games: 8, roundResults: [0, 0, 1, 0, 1, 0.5, 0.5, 1] },
+          { place: 8, name: 'Морозов Никита', age: 11, points: 3.5, games: 8, roundResults: [0, 0.5, 0, 0.5, 0, 1, 0.5, 1] }
         ]
       },
       {
@@ -871,13 +872,14 @@ const Index = () => {
         participants: 16,
         status: 'Завершен',
         winner: 'Козлов Денис',
+        rounds: 7,
         results: [
-          { place: 1, name: 'Козлов Денис', age: 11, points: 6, games: 7 },
-          { place: 2, name: 'Иванов Максим', age: 9, points: 5.5, games: 7 },
-          { place: 3, name: 'Петрова София', age: 8, points: 5, games: 7 },
-          { place: 4, name: 'Смирнова Анна', age: 10, points: 4.5, games: 7 },
-          { place: 5, name: 'Новиков Артем', age: 10, points: 4, games: 7 },
-          { place: 6, name: 'Волков Егор', age: 9, points: 3.5, games: 7 }
+          { place: 1, name: 'Козлов Денис', age: 11, points: 6, games: 7, roundResults: [1, 1, 0.5, 1, 1, 1, 0.5] },
+          { place: 2, name: 'Иванов Максим', age: 9, points: 5.5, games: 7, roundResults: [1, 0.5, 1, 0.5, 1, 0.5, 1] },
+          { place: 3, name: 'Петрова София', age: 8, points: 5, games: 7, roundResults: [0.5, 1, 1, 1, 0, 0.5, 1] },
+          { place: 4, name: 'Смирнова Анна', age: 10, points: 4.5, games: 7, roundResults: [0, 0.5, 0.5, 1, 1, 1, 0.5] },
+          { place: 5, name: 'Новиков Артем', age: 10, points: 4, games: 7, roundResults: [0.5, 0, 1, 0, 0.5, 1, 1] },
+          { place: 6, name: 'Волков Егор', age: 9, points: 3.5, games: 7, roundResults: [0, 1, 0, 0.5, 0.5, 0.5, 1] }
         ]
       },
       {
@@ -887,12 +889,13 @@ const Index = () => {
         participants: 32,
         status: 'Завершен',
         winner: 'Смирнова Анна',
+        rounds: 9,
         results: [
-          { place: 1, name: 'Смирнова Анна', age: 10, points: 8, games: 9 },
-          { place: 2, name: 'Иванов Максим', age: 9, points: 7.5, games: 9 },
-          { place: 3, name: 'Козлов Денис', age: 11, points: 7, games: 9 },
-          { place: 4, name: 'Новиков Артем', age: 10, points: 6.5, games: 9 },
-          { place: 5, name: 'Петрова София', age: 8, points: 6, games: 9 }
+          { place: 1, name: 'Смирнова Анна', age: 10, points: 8, games: 9, roundResults: [1, 1, 1, 0.5, 1, 1, 1, 1, 0.5] },
+          { place: 2, name: 'Иванов Максим', age: 9, points: 7.5, games: 9, roundResults: [1, 0.5, 1, 1, 0.5, 1, 1, 1, 0.5] },
+          { place: 3, name: 'Козлов Денис', age: 11, points: 7, games: 9, roundResults: [0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 0.5] },
+          { place: 4, name: 'Новиков Артем', age: 10, points: 6.5, games: 9, roundResults: [1, 0, 0.5, 0.5, 1, 1, 1, 0.5, 1] },
+          { place: 5, name: 'Петрова София', age: 8, points: 6, games: 9, roundResults: [0, 1, 0.5, 1, 0, 1, 0.5, 1, 1] }
         ]
       }
     ];
@@ -934,6 +937,11 @@ const Index = () => {
                       <th className="text-left py-3 px-4 font-semibold">Место</th>
                       <th className="text-left py-3 px-4 font-semibold">ФИ участника</th>
                       <th className="text-center py-3 px-4 font-semibold">Возраст</th>
+                      {Array.from({ length: selectedTournament.rounds }, (_, i) => (
+                        <th key={i} className="text-center py-3 px-2 font-semibold text-sm min-w-[50px]">
+                          {i + 1}
+                        </th>
+                      ))}
                       <th className="text-center py-3 px-4 font-semibold">Очки</th>
                       <th className="text-center py-3 px-4 font-semibold">Партий</th>
                       <th className="text-center py-3 px-4 font-semibold">Процент</th>
@@ -957,6 +965,17 @@ const Index = () => {
                         </td>
                         <td className="py-3 px-4">{result.name}</td>
                         <td className="py-3 px-4 text-center">{result.age} лет</td>
+                        {result.roundResults.map((roundResult: number, roundIndex: number) => (
+                          <td key={roundIndex} className="py-3 px-2 text-center text-sm font-medium">
+                            <span className={`inline-block w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                              roundResult === 1 ? 'bg-green-100 text-green-800' : 
+                              roundResult === 0.5 ? 'bg-yellow-100 text-yellow-800' : 
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {roundResult === 0.5 ? '½' : roundResult}
+                            </span>
+                          </td>
+                        ))}
                         <td className="py-3 px-4 text-center font-semibold">{result.points}</td>
                         <td className="py-3 px-4 text-center">{result.games}</td>
                         <td className="py-3 px-4 text-center">
