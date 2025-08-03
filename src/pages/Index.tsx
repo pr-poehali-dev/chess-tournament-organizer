@@ -136,7 +136,7 @@ const Index = () => {
                         key={i}
                         className={`aspect-square ${
                           isLight ? 'bg-chess-light' : 'bg-chess-dark'
-                        } flex items-center justify-center text-2xl`}
+                        } flex items-center justify-center text-4xl`}
                       >
                         {i === 0 && '♜'}
                         {i === 1 && '♞'}
