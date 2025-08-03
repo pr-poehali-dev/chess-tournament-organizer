@@ -12,6 +12,20 @@ interface Position {
 }
 
 const InteractiveChessBoard = () => {
+  // Состояние для отслеживания возможности рокировки
+  const [castlingRights, setCastlingRights] = useState({
+    whiteKingSide: true,
+    whiteQueenSide: true,
+    blackKingSide: true,
+    blackQueenSide: true
+  });
+
+  // Состояние для превращения пешки
+  const [pawnPromotion, setPawnPromotion] = useState<{
+    position: Position;
+    color: 'white' | 'black';
+  } | null>(null);
+
   // Инициализация доски
   const initializeBoard = (): (ChessPiece | null)[][] => {
     const board: (ChessPiece | null)[][] = Array(8).fill(null).map(() => Array(8).fill(null));
@@ -413,6 +427,7 @@ const InteractiveChessBoard = () => {
         break;
 
       case 'king':
+        // Обычные ходы короля  
         for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
           const newRow = row + dr;
           const newCol = col + dc;
@@ -423,10 +438,91 @@ const InteractiveChessBoard = () => {
             }
           }
         }
+        
+        // Рокировка (только если король на начальной позиции)
+        if ((piece.color === 'white' && row === 7 && col === 4) || 
+            (piece.color === 'black' && row === 0 && col === 4)) {
+          // Короткая рокировка
+          if (canCastle(piece.color, 'king')) {
+            moves.push({ row, col: 6 });
+          }
+          // Длинная рокировка  
+          if (canCastle(piece.color, 'queen')) {
+            moves.push({ row, col: 2 });
+          }
+        }
         break;
     }
 
     return moves;
+  };
+
+  // Проверить возможность рокировки
+  const canCastle = (color: 'white' | 'black', side: 'king' | 'queen'): boolean => {
+    const row = color === 'white' ? 7 : 0;
+    const kingCol = 4;
+    const rookCol = side === 'king' ? 7 : 0;
+    
+    // Проверяем права на рокировку
+    const rights = side === 'king' 
+      ? (color === 'white' ? castlingRights.whiteKingSide : castlingRights.blackKingSide)
+      : (color === 'white' ? castlingRights.whiteQueenSide : castlingRights.blackQueenSide);
+    
+    if (!rights) return false;
+    
+    // Проверяем, что король и ладья на месте
+    const king = board[row][kingCol];
+    const rook = board[row][rookCol];
+    
+    if (!king || king.type !== 'king' || king.color !== color) return false;
+    if (!rook || rook.type !== 'rook' || rook.color !== color) return false;
+    
+    // Проверяем, что между королем и ладьей нет фигур
+    const start = Math.min(kingCol, rookCol) + 1;
+    const end = Math.max(kingCol, rookCol);
+    
+    for (let col = start; col < end; col++) {
+      if (board[row][col]) return false;
+    }
+    
+    // Проверяем, что король не под шахом
+    if (isKingInCheck(board, color)) return false;
+    
+    // Проверяем, что король не проходит через битое поле
+    const kingDirection = side === 'king' ? 1 : -1;
+    for (let i = 1; i <= 2; i++) {
+      const testCol = kingCol + kingDirection * i;
+      if (testCol >= 0 && testCol < 8) {
+        const testBoard = board.map(row => [...row]);
+        testBoard[row][kingCol] = null;
+        testBoard[row][testCol] = king;
+        
+        if (isKingInCheck(testBoard, color)) return false;
+      }
+    }
+    
+    return true;
+  };
+
+  // Выполнить рокировку
+  const performCastle = (color: 'white' | 'black', side: 'king' | 'queen'): (ChessPiece | null)[][] => {
+    const newBoard = board.map(row => [...row]);
+    const row = color === 'white' ? 7 : 0;
+    const kingCol = 4;
+    const rookCol = side === 'king' ? 7 : 0;
+    const newKingCol = side === 'king' ? 6 : 2;
+    const newRookCol = side === 'king' ? 5 : 3;
+    
+    const king = newBoard[row][kingCol];
+    const rook = newBoard[row][rookCol];
+    
+    // Перемещаем короля и ладью
+    newBoard[row][kingCol] = null;
+    newBoard[row][rookCol] = null;
+    newBoard[row][newKingCol] = king;
+    newBoard[row][newRookCol] = rook;
+    
+    return newBoard;
   };
 
   // Проверить легальность хода на указанной доске
@@ -518,11 +614,72 @@ const InteractiveChessBoard = () => {
 
     // Если выбрана фигура и кликаем на возможный ход
     if (selectedSquare && possibleMoves.some(move => move.row === row && move.col === col)) {
-      // Выполнить ход
-      const newBoard = board.map(r => [...r]);
-      const movingPiece = newBoard[selectedSquare.row][selectedSquare.col];
-      newBoard[selectedSquare.row][selectedSquare.col] = null;
-      newBoard[row][col] = movingPiece;
+      const movingPiece = board[selectedSquare.row][selectedSquare.col];
+      let newBoard = board.map(r => [...r]);
+      
+      // Проверяем рокировку
+      if (movingPiece?.type === 'king' && Math.abs(col - selectedSquare.col) === 2) {
+        // Это рокировка
+        const side = col > selectedSquare.col ? 'king' : 'queen';
+        newBoard = performCastle(currentPlayer, side);
+        
+        // Обновляем права на рокировку
+        const newCastlingRights = {...castlingRights};
+        if (currentPlayer === 'white') {
+          newCastlingRights.whiteKingSide = false;
+          newCastlingRights.whiteQueenSide = false;
+        } else {
+          newCastlingRights.blackKingSide = false;
+          newCastlingRights.blackQueenSide = false;
+        }
+        setCastlingRights(newCastlingRights);
+      } else {
+        // Обычный ход
+        newBoard[selectedSquare.row][selectedSquare.col] = null;
+        newBoard[row][col] = movingPiece;
+        
+        // Обновляем права на рокировку при движении короля или ладьи
+        if (movingPiece?.type === 'king' || movingPiece?.type === 'rook') {
+          const newCastlingRights = {...castlingRights};
+          
+          if (movingPiece.type === 'king') {
+            if (movingPiece.color === 'white') {
+              newCastlingRights.whiteKingSide = false;
+              newCastlingRights.whiteQueenSide = false;
+            } else {
+              newCastlingRights.blackKingSide = false;
+              newCastlingRights.blackQueenSide = false;
+            }
+          } else if (movingPiece.type === 'rook') {
+            // Проверяем какая ладья двигается
+            if (movingPiece.color === 'white' && selectedSquare.row === 7) {
+              if (selectedSquare.col === 0) newCastlingRights.whiteQueenSide = false;
+              if (selectedSquare.col === 7) newCastlingRights.whiteKingSide = false;
+            } else if (movingPiece.color === 'black' && selectedSquare.row === 0) {
+              if (selectedSquare.col === 0) newCastlingRights.blackQueenSide = false;
+              if (selectedSquare.col === 7) newCastlingRights.blackKingSide = false;
+            }
+          }
+          
+          setCastlingRights(newCastlingRights);
+        }
+        
+        // Проверяем превращение пешки
+        if (movingPiece?.type === 'pawn' && 
+            ((movingPiece.color === 'white' && row === 0) || 
+             (movingPiece.color === 'black' && row === 7))) {
+          // Открываем окно выбора фигуры для превращения
+          setPawnPromotion({
+            position: { row, col },
+            color: movingPiece.color
+          });
+          // Пока не показываем результат хода - ждем выбора фигуры
+          setBoard(newBoard);
+          setSelectedSquare(null);
+          setPossibleMoves([]);
+          return;
+        }
+      }
 
       // Проверяем шах после хода
       const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
@@ -581,6 +738,56 @@ const InteractiveChessBoard = () => {
     return possibleMoves.some(move => move.row === row && move.col === col);
   };
 
+  // Завершить превращение пешки
+  const completePawnPromotion = (pieceType: 'queen' | 'rook' | 'bishop' | 'knight') => {
+    if (!pawnPromotion) return;
+    
+    const newBoard = board.map(row => [...row]);
+    const symbols = {
+      queen: pawnPromotion.color === 'white' ? '♕' : '♛',
+      rook: pawnPromotion.color === 'white' ? '♖' : '♜', 
+      bishop: pawnPromotion.color === 'white' ? '♗' : '♝',
+      knight: pawnPromotion.color === 'white' ? '♘' : '♞'
+    };
+    
+    newBoard[pawnPromotion.position.row][pawnPromotion.position.col] = {
+      type: pieceType,
+      color: pawnPromotion.color,
+      symbol: symbols[pieceType]
+    };
+    
+    // Проверяем шах после превращения
+    const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
+    const isNextPlayerInCheck = isKingInCheck(newBoard, nextPlayer);
+    
+    // Проверяем, есть ли у следующего игрока легальные ходы
+    const nextPlayerMoves = getAllPossibleMovesForPlayerOnBoard(newBoard, nextPlayer);
+    
+    setBoard(newBoard);
+    setCurrentPlayer(nextPlayer);
+    setPawnPromotion(null);
+    
+    // Обновляем статус игры
+    if (isNextPlayerInCheck) {
+      if (nextPlayerMoves.length === 0) {
+        setGameStatus('checkmate');
+      } else {
+        setGameStatus('check');
+      }
+      setIsInCheck({
+        white: nextPlayer === 'white',
+        black: nextPlayer === 'black'
+      });
+    } else {
+      if (nextPlayerMoves.length === 0) {
+        setGameStatus('stalemate');
+      } else {
+        setGameStatus('playing');
+      }
+      setIsInCheck({ white: false, black: false });
+    }
+  };
+
   // Сброс игры
   const resetGame = () => {
     setBoard(initializeBoard());
@@ -589,6 +796,13 @@ const InteractiveChessBoard = () => {
     setCurrentPlayer('white');
     setIsInCheck({ white: false, black: false });
     setGameStatus('playing');
+    setCastlingRights({
+      whiteKingSide: true,
+      whiteQueenSide: true,
+      blackKingSide: true,
+      blackQueenSide: true
+    });
+    setPawnPromotion(null);
   };
 
   return (
@@ -626,6 +840,63 @@ const InteractiveChessBoard = () => {
                 className="w-full px-6 py-3 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-lg transition-colors"
               >
                 Играть снова
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно превращения пешки */}
+      {pawnPromotion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center border-4 border-primary">
+            <div className="mb-6">
+              <div className="text-6xl mb-4">👑</div>
+              <h2 className="text-3xl font-bold text-primary mb-2">ПРЕВРАЩЕНИЕ!</h2>
+              <p className="text-xl text-gray-700">
+                Выберите фигуру для превращения пешки
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => completePawnPromotion('queen')}
+                className="flex flex-col items-center p-4 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-lg transition-colors"
+              >
+                <span className="text-4xl mb-2">
+                  {pawnPromotion.color === 'white' ? '♕' : '♛'}
+                </span>
+                Ферзь
+              </button>
+              
+              <button
+                onClick={() => completePawnPromotion('rook')}
+                className="flex flex-col items-center p-4 bg-gray-200 hover:bg-gray-300 text-black rounded-lg font-bold text-lg transition-colors"
+              >
+                <span className="text-4xl mb-2">
+                  {pawnPromotion.color === 'white' ? '♖' : '♜'}
+                </span>
+                Ладья
+              </button>
+              
+              <button
+                onClick={() => completePawnPromotion('bishop')}
+                className="flex flex-col items-center p-4 bg-gray-200 hover:bg-gray-300 text-black rounded-lg font-bold text-lg transition-colors"
+              >
+                <span className="text-4xl mb-2">
+                  {pawnPromotion.color === 'white' ? '♗' : '♝'}
+                </span>
+                Слон
+              </button>
+              
+              <button
+                onClick={() => completePawnPromotion('knight')}
+                className="flex flex-col items-center p-4 bg-gray-200 hover:bg-gray-300 text-black rounded-lg font-bold text-lg transition-colors"
+              >
+                <span className="text-4xl mb-2">
+                  {pawnPromotion.color === 'white' ? '♘' : '♞'}
+                </span>
+                Конь
               </button>
             </div>
           </div>
@@ -676,12 +947,7 @@ const InteractiveChessBoard = () => {
           Новая игра
         </button>
         
-        <button
-          onClick={() => setGameStatus('checkmate')}
-          className="mt-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
-        >
-          Тест: Мат
-        </button>
+
       </div>
 
       {/* Шахматная доска */}
