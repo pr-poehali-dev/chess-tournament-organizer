@@ -852,16 +852,16 @@ const Index = () => {
         date: '2025-03-15',
         participants: 24,
         status: 'Завершен',
-        winner: 'Иванов Максим Андреевич',
+        winner: 'Иванов Максим',
         results: [
-          { place: 1, name: 'Иванов Максим Андреевич', points: 7, games: 8 },
-          { place: 2, name: 'Смирнова Анна Дмитриевна', points: 6.5, games: 8 },
-          { place: 3, name: 'Козлов Денис Сергеевич', points: 6, games: 8 },
-          { place: 4, name: 'Петрова София Алексеевна', points: 5.5, games: 8 },
-          { place: 5, name: 'Новиков Артем Владимирович', points: 5, games: 8 },
-          { place: 6, name: 'Волков Егор Михайлович', points: 4.5, games: 8 },
-          { place: 7, name: 'Лебедева Мария Александровна', points: 4, games: 8 },
-          { place: 8, name: 'Морозов Никита Дмитриевич', points: 3.5, games: 8 }
+          { place: 1, name: 'Иванов Максим', age: 9, points: 7, games: 8 },
+          { place: 2, name: 'Смирнова Анна', age: 10, points: 6.5, games: 8 },
+          { place: 3, name: 'Козлов Денис', age: 11, points: 6, games: 8 },
+          { place: 4, name: 'Петрова София', age: 8, points: 5.5, games: 8 },
+          { place: 5, name: 'Новиков Артем', age: 10, points: 5, games: 8 },
+          { place: 6, name: 'Волков Егор', age: 9, points: 4.5, games: 8 },
+          { place: 7, name: 'Лебедева Мария', age: 8, points: 4, games: 8 },
+          { place: 8, name: 'Морозов Никита', age: 11, points: 3.5, games: 8 }
         ]
       },
       {
@@ -870,14 +870,14 @@ const Index = () => {
         date: '2025-01-20',
         participants: 16,
         status: 'Завершен',
-        winner: 'Козлов Денис Сергеевич',
+        winner: 'Козлов Денис',
         results: [
-          { place: 1, name: 'Козлов Денис Сергеевич', points: 6, games: 7 },
-          { place: 2, name: 'Иванов Максим Андреевич', points: 5.5, games: 7 },
-          { place: 3, name: 'Петрова София Алексеевна', points: 5, games: 7 },
-          { place: 4, name: 'Смирнова Анна Дмитриевна', points: 4.5, games: 7 },
-          { place: 5, name: 'Новиков Артем Владимирович', points: 4, games: 7 },
-          { place: 6, name: 'Волков Егор Михайлович', points: 3.5, games: 7 }
+          { place: 1, name: 'Козлов Денис', age: 11, points: 6, games: 7 },
+          { place: 2, name: 'Иванов Максим', age: 9, points: 5.5, games: 7 },
+          { place: 3, name: 'Петрова София', age: 8, points: 5, games: 7 },
+          { place: 4, name: 'Смирнова Анна', age: 10, points: 4.5, games: 7 },
+          { place: 5, name: 'Новиков Артем', age: 10, points: 4, games: 7 },
+          { place: 6, name: 'Волков Егор', age: 9, points: 3.5, games: 7 }
         ]
       },
       {
@@ -886,13 +886,13 @@ const Index = () => {
         date: '2024-10-12',
         participants: 32,
         status: 'Завершен',
-        winner: 'Смирнова Анна Дмитриевна',
+        winner: 'Смирнова Анна',
         results: [
-          { place: 1, name: 'Смирнова Анна Дмитриевна', points: 8, games: 9 },
-          { place: 2, name: 'Иванов Максим Андреевич', points: 7.5, games: 9 },
-          { place: 3, name: 'Козлов Денис Сергеевич', points: 7, games: 9 },
-          { place: 4, name: 'Новиков Артем Владимирович', points: 6.5, games: 9 },
-          { place: 5, name: 'Петрова София Алексеевна', points: 6, games: 9 }
+          { place: 1, name: 'Смирнова Анна', age: 10, points: 8, games: 9 },
+          { place: 2, name: 'Иванов Максим', age: 9, points: 7.5, games: 9 },
+          { place: 3, name: 'Козлов Денис', age: 11, points: 7, games: 9 },
+          { place: 4, name: 'Новиков Артем', age: 10, points: 6.5, games: 9 },
+          { place: 5, name: 'Петрова София', age: 8, points: 6, games: 9 }
         ]
       }
     ];
@@ -933,6 +933,7 @@ const Index = () => {
                     <tr className="border-b-2">
                       <th className="text-left py-3 px-4 font-semibold">Место</th>
                       <th className="text-left py-3 px-4 font-semibold">ФИ участника</th>
+                      <th className="text-center py-3 px-4 font-semibold">Возраст</th>
                       <th className="text-center py-3 px-4 font-semibold">Очки</th>
                       <th className="text-center py-3 px-4 font-semibold">Партий</th>
                       <th className="text-center py-3 px-4 font-semibold">Процент</th>
@@ -955,6 +956,7 @@ const Index = () => {
                           {result.place}
                         </td>
                         <td className="py-3 px-4">{result.name}</td>
+                        <td className="py-3 px-4 text-center">{result.age} лет</td>
                         <td className="py-3 px-4 text-center font-semibold">{result.points}</td>
                         <td className="py-3 px-4 text-center">{result.games}</td>
                         <td className="py-3 px-4 text-center">
