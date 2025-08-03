@@ -51,10 +51,148 @@ const InteractiveChessBoard = () => {
   const [selectedSquare, setSelectedSquare] = useState<Position | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<'white' | 'black'>('white');
   const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
+  const [isInCheck, setIsInCheck] = useState<{ white: boolean; black: boolean }>({ white: false, black: false });
+  const [gameStatus, setGameStatus] = useState<'playing' | 'check' | 'checkmate' | 'stalemate'>('playing');
 
   // Проверка, является ли клетка светлой
   const isLightSquare = (row: number, col: number): boolean => {
     return (row + col) % 2 === 0;
+  };
+
+  // Найти позицию короля
+  const findKing = (board: (ChessPiece | null)[][], color: 'white' | 'black'): Position | null => {
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece && piece.type === 'king' && piece.color === color) {
+          return { row, col };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Проверить, атакована ли клетка противником
+  const isSquareAttacked = (board: (ChessPiece | null)[][], targetRow: number, targetCol: number, byColor: 'white' | 'black'): boolean => {
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece && piece.color === byColor) {
+          const moves = getPieceAttackMoves(board, row, col, piece);
+          if (moves.some(move => move.row === targetRow && move.col === targetCol)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  // Получить атакующие ходы фигуры (для проверки шаха)
+  const getPieceAttackMoves = (board: (ChessPiece | null)[][], row: number, col: number, piece: ChessPiece): Position[] => {
+    const moves: Position[] = [];
+
+    switch (piece.type) {
+      case 'pawn':
+        const direction = piece.color === 'white' ? -1 : 1;
+        // Пешка атакует только по диагонали
+        for (const colOffset of [-1, 1]) {
+          const newRow = row + direction;
+          const newCol = col + colOffset;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            moves.push({ row: newRow, col: newCol });
+          }
+        }
+        break;
+
+      case 'rook':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            moves.push({ row: newRow, col: newCol });
+            if (board[newRow][newCol]) break; // Остановиться, если встретили фигуру
+          }
+        }
+        break;
+
+      case 'knight':
+        const knightMoves = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
+        for (const [dr, dc] of knightMoves) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            moves.push({ row: newRow, col: newCol });
+          }
+        }
+        break;
+
+      case 'bishop':
+        for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            moves.push({ row: newRow, col: newCol });
+            if (board[newRow][newCol]) break;
+          }
+        }
+        break;
+
+      case 'queen':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            moves.push({ row: newRow, col: newCol });
+            if (board[newRow][newCol]) break;
+          }
+        }
+        break;
+
+      case 'king':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            moves.push({ row: newRow, col: newCol });
+          }
+        }
+        break;
+    }
+
+    return moves;
+  };
+
+  // Проверить, находится ли король в шахе
+  const isKingInCheck = (board: (ChessPiece | null)[][], color: 'white' | 'black'): boolean => {
+    const kingPos = findKing(board, color);
+    if (!kingPos) return false;
+
+    const enemyColor = color === 'white' ? 'black' : 'white';
+    return isSquareAttacked(board, kingPos.row, kingPos.col, enemyColor);
+  };
+
+  // Проверить, является ли ход легальным (не оставляет короля под шахом)
+  const isMoveLegal = (fromRow: number, fromCol: number, toRow: number, toCol: number): boolean => {
+    // Создаем копию доски и делаем пробный ход
+    const testBoard = board.map(row => [...row]);
+    const piece = testBoard[fromRow][fromCol];
+    if (!piece) return false;
+
+    testBoard[fromRow][fromCol] = null;
+    testBoard[toRow][toCol] = piece;
+
+    // Проверяем, не остался ли наш король под шахом
+    return !isKingInCheck(testBoard, piece.color);
   };
 
   // Проверка возможных ходов для пешки
@@ -195,7 +333,8 @@ const InteractiveChessBoard = () => {
         break;
     }
 
-    return moves;
+    // Фильтруем только легальные ходы (не оставляющие короля под шахом)
+    return moves.filter(move => isMoveLegal(row, col, move.row, move.col));
   };
 
   // Обработка клика по клетке
@@ -210,10 +349,27 @@ const InteractiveChessBoard = () => {
       newBoard[selectedSquare.row][selectedSquare.col] = null;
       newBoard[row][col] = movingPiece;
 
+      // Проверяем шах после хода
+      const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
+      const isNextPlayerInCheck = isKingInCheck(newBoard, nextPlayer);
+      
       setBoard(newBoard);
       setSelectedSquare(null);
       setPossibleMoves([]);
-      setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+      setCurrentPlayer(nextPlayer);
+      
+      // Обновляем статус игры
+      if (isNextPlayerInCheck) {
+        setGameStatus('check');
+        setIsInCheck({
+          white: nextPlayer === 'white',
+          black: nextPlayer === 'black'
+        });
+      } else {
+        setGameStatus('playing');
+        setIsInCheck({ white: false, black: false });
+      }
+      
       return;
     }
 
@@ -243,6 +399,8 @@ const InteractiveChessBoard = () => {
     setSelectedSquare(null);
     setPossibleMoves([]);
     setCurrentPlayer('white');
+    setIsInCheck({ white: false, black: false });
+    setGameStatus('playing');
   };
 
   return (
@@ -250,11 +408,22 @@ const InteractiveChessBoard = () => {
       {/* Информация о игре */}
       <div className="text-center">
         <h3 className="text-2xl font-heading font-bold mb-2">Интерактивные шахматы</h3>
+        
+        {/* Статус игры */}
+        {gameStatus === 'check' && (
+          <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+            <p className="text-red-700 font-semibold">
+              ⚠️ ШАХ! Король {currentPlayer === 'white' ? 'белых' : 'черных'} под угрозой!
+            </p>
+          </div>
+        )}
+        
         <p className="text-lg font-body">
-          Ход: <span className="font-semibold text-primary">
+          Ход: <span className={`font-semibold ${gameStatus === 'check' ? 'text-red-600' : 'text-primary'}`}>
             {currentPlayer === 'white' ? 'Белых' : 'Черных'}
           </span>
         </p>
+        
         <button
           onClick={resetGame}
           className="mt-2 px-4 py-2 bg-primary hover:bg-gold-600 text-black rounded-lg font-medium transition-colors"
@@ -273,6 +442,8 @@ const InteractiveChessBoard = () => {
             const isLight = isLightSquare(row, col);
             const isSelected = isSquareSelected(row, col);
             const isPossible = isPossibleMove(row, col);
+            const isKingInCheckSquare = piece && piece.type === 'king' && 
+              ((piece.color === 'white' && isInCheck.white) || (piece.color === 'black' && isInCheck.black));
 
             return (
               <div
@@ -284,6 +455,7 @@ const InteractiveChessBoard = () => {
                   ${isLight ? 'bg-chess-light' : 'bg-chess-dark'}
                   ${isSelected ? 'ring-4 ring-primary ring-inset' : ''}
                   ${isPossible ? 'ring-2 ring-green-500 ring-inset' : ''}
+                  ${isKingInCheckSquare ? 'ring-4 ring-red-500 ring-inset bg-red-100' : ''}
                   hover:brightness-110
                 `}
               >
