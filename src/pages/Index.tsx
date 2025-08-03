@@ -844,8 +844,38 @@ const Index = () => {
   );
 
   const renderResults = () => {
+    // Функция для валидации турнирных данных
+    const validateTournamentData = (games: any[], players: string[]) => {
+      const errors: string[] = [];
+      const maxRound = Math.max(...games.map(g => g.round));
+      
+      for (let round = 1; round <= maxRound; round++) {
+        const roundGames = games.filter(g => g.round === round);
+        const playersInRound = new Set<string>();
+        
+        roundGames.forEach(game => {
+          if (playersInRound.has(game.white)) {
+            errors.push(`Тур ${round}: ${game.white} играет более одной партии`);
+          }
+          if (playersInRound.has(game.black)) {
+            errors.push(`Тур ${round}: ${game.black} играет более одной партии`);
+          }
+          playersInRound.add(game.white);
+          playersInRound.add(game.black);
+        });
+      }
+      
+      return errors;
+    };
+
     // Функция для генерации согласованных результатов турнира на основе реестра партий
     const generateTournamentResults = (games: any[], players: string[]) => {
+      // Проверяем данные на корректность
+      const validationErrors = validateTournamentData(games, players);
+      if (validationErrors.length > 0) {
+        console.warn('Ошибки в турнирных данных:', validationErrors);
+      }
+      
       const results: any = {};
       
       // Инициализация результатов для каждого игрока
@@ -931,7 +961,7 @@ const Index = () => {
           // Тур 3
           { round: 3, white: 'Иванов Максим', black: 'Козлов Денис', result: '0.5-0.5' },
           { round: 3, white: 'Смирнова Анна', black: 'Морозов Никита', result: '1-0' },
-          { round: 3, white: 'Волков Егор', black: 'Козлов Денис', result: '0-1' },
+          { round: 3, white: 'Волков Егор', black: 'Новиков Артем', result: '1-0' },
           { round: 3, white: 'Лебедева Мария', black: 'Петрова София', result: '0-1' },
           
           // Тур 4
@@ -949,8 +979,8 @@ const Index = () => {
           // Тур 6
           { round: 6, white: 'Петрова София', black: 'Иванов Максим', result: '0-1' },
           { round: 6, white: 'Новиков Артем', black: 'Смирнова Анна', result: '0-1' },
-          { round: 6, white: 'Козлов Денис', black: 'Иванов Максим', result: '0.5-0.5' },
-          { round: 6, white: 'Лебедева Мария', black: 'Волков Егор', result: '0.5-0.5' },
+          { round: 6, white: 'Козлов Денис', black: 'Волков Егор', result: '0.5-0.5' },
+          { round: 6, white: 'Лебедева Мария', black: 'Морозов Никита', result: '1-0' },
           
           // Тур 7
           { round: 7, white: 'Смирнова Анна', black: 'Иванов Максим', result: '0.5-0.5' },
