@@ -18,39 +18,59 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				heading: ['Montserrat', 'system-ui', 'sans-serif'],
+				body: ['Open Sans', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				background: '#FFFFFF',
+				foreground: '#000000',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					DEFAULT: '#FFD700',
+					foreground: '#000000'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					DEFAULT: '#F8F9FA',
+					foreground: '#000000'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					DEFAULT: '#6B7280',
+					foreground: '#374151'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					DEFAULT: '#FFD700',
+					foreground: '#000000'
 				},
 				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
+					DEFAULT: '#FFFFFF',
+					foreground: '#000000'
 				},
 				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+					DEFAULT: '#FFFFFF',
+					foreground: '#000000'
+				},
+				gold: {
+					50: '#FFFBEB',
+					100: '#FEF3C7',
+					200: '#FDE68A',
+					300: '#FCD34D',
+					400: '#FBBF24',
+					500: '#FFD700',
+					600: '#D69E2E',
+					700: '#B7791F',
+					800: '#92400E',
+					900: '#78350F'
+				},
+				chess: {
+					light: '#F0D9B5',
+					dark: '#B58863'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
