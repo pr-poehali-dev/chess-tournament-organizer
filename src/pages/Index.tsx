@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
 import { UserData } from '@/types/user';
+import InteractiveChessBoard from '@/components/InteractiveChessBoard';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -199,6 +200,7 @@ const Index = () => {
   const navigationItems = [
     { id: 'home', label: 'Главная', icon: 'Home' },
     { id: 'tournaments', label: 'Турниры', icon: 'Trophy' },
+    { id: 'play', label: 'Игра', icon: 'Gamepad2' },
     { id: 'results', label: 'Результаты', icon: 'Award' },
     { id: 'about', label: 'О центре', icon: 'Info' },
     { id: 'contacts', label: 'Контакты', icon: 'Phone' },
@@ -282,71 +284,7 @@ const Index = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-3xl shadow-2xl p-8">
-                <div className="grid grid-cols-8 gap-1">
-                  {Array.from({ length: 64 }, (_, i) => {
-                    const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
-                    const row = Math.floor(i / 8);
-                    const col = i % 8;
-                    
-                    // Определяем фигуру и её цвет
-                    let piece = '';
-                    let isBlackPiece = false;
-                    
-                    // Черные фигуры (верхние ряды 0-1)
-                    if (row === 0) {
-                      isBlackPiece = true;
-                      if (col === 0 || col === 7) piece = '♜'; // Ладья
-                      if (col === 1 || col === 6) piece = '♞'; // Конь
-                      if (col === 2 || col === 5) piece = '♝'; // Слон
-                      if (col === 3) piece = '♛'; // Ферзь
-                      if (col === 4) piece = '♚'; // Король
-                    }
-                    if (row === 1) {
-                      isBlackPiece = true;
-                      piece = '♟'; // Пешка
-                    }
-                    
-                    // Белые фигуры (нижние ряды 6-7)
-                    if (row === 6) {
-                      isBlackPiece = false;
-                      piece = '♙'; // Пешка
-                    }
-                    if (row === 7) {
-                      isBlackPiece = false;
-                      if (col === 0 || col === 7) piece = '♖'; // Ладья
-                      if (col === 1 || col === 6) piece = '♘'; // Конь
-                      if (col === 2 || col === 5) piece = '♗'; // Слон
-                      if (col === 3) piece = '♕'; // Ферзь
-                      if (col === 4) piece = '♔'; // Король
-                    }
-                    
-                    return (
-                      <div
-                        key={i}
-                        className={`aspect-square ${
-                          isLight ? 'bg-chess-light' : 'bg-chess-dark'
-                        } flex items-center justify-center text-6xl font-bold`}
-                      >
-                        {piece && (
-                          <span 
-                            className={`${
-                              isBlackPiece ? 'text-black' : 'text-white'
-                            } drop-shadow-lg`}
-                            style={{
-                              textShadow: isBlackPiece 
-                                ? '1px 1px 2px rgba(255,255,255,0.3)' 
-                                : '1px 1px 2px rgba(0,0,0,0.8)'
-                            }}
-                          >
-                            {piece}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <InteractiveChessBoard />
             </div>
           </div>
         </div>
@@ -1399,12 +1337,27 @@ const Index = () => {
     </div>
   );
 
+  const renderPlay = () => (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">Интерактивные шахматы</h1>
+        <p className="text-xl text-gray-600 font-body">Играйте в шахматы прямо на сайте и тренируйтесь перед турнирами</p>
+      </div>
+      
+      <div className="flex justify-center">
+        <InteractiveChessBoard />
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
         return renderHome();
       case 'tournaments':
         return renderTournaments();
+      case 'play':
+        return renderPlay();
       case 'results':
         return renderResults();
       case 'about':
@@ -1442,6 +1395,7 @@ const Index = () => {
               <h4 className="font-heading font-semibold mb-4">Разделы</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><button onClick={() => setActiveSection('tournaments')}>Турниры</button></li>
+                <li><button onClick={() => setActiveSection('play')}>Игра</button></li>
                 <li><button onClick={() => setActiveSection('about')}>О центре</button></li>
                 <li><button onClick={() => setActiveSection('contacts')}>Контакты</button></li>
               </ul>
