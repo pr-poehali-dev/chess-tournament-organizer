@@ -446,6 +446,45 @@ const InteractiveChessBoard = () => {
 
   return (
     <div className="flex flex-col items-center space-y-6">
+      {/* Всплывающее окно с результатом игры */}
+      {(gameStatus === 'checkmate' || gameStatus === 'stalemate') && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center border-4 border-primary">
+            <div className="mb-6">
+              {gameStatus === 'checkmate' ? (
+                <>
+                  <div className="text-6xl mb-4">🏆</div>
+                  <h2 className="text-3xl font-bold text-primary mb-2">ПОБЕДА!</h2>
+                  <p className="text-xl text-gray-700">
+                    Выиграли <span className="font-bold text-primary">
+                      {currentPlayer === 'white' ? 'Черные' : 'Белые'}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">Мат</p>
+                </>
+              ) : (
+                <>
+                  <div className="text-6xl mb-4">🤝</div>
+                  <h2 className="text-3xl font-bold text-primary mb-2">НИЧЬЯ!</h2>
+                  <p className="text-xl text-gray-700">
+                    Пат - нет доступных ходов
+                  </p>
+                </>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              <button
+                onClick={resetGame}
+                className="w-full px-6 py-3 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-lg transition-colors"
+              >
+                Играть снова
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Информация о игре */}
       <div className="text-center">
         <h3 className="text-2xl font-heading font-bold mb-2">Интерактивные шахматы</h3>
