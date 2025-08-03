@@ -59,20 +59,21 @@ const Index = () => {
   ];
 
   const renderNavigation = () => (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <img 
-              src="https://cdn.poehali.dev/files/f7c22529-8aec-4d54-8fdf-65bbb1fc6ed7.png" 
-              alt="Мир шахмат" 
-              className="h-12 w-auto"
-            />
-            <div>
-              <h1 className="text-lg font-heading font-semibold text-gray-900">Мир шахмат</h1>
-              <p className="text-xs text-gray-500">Центр поддержки детского шахматного спорта</p>
+    <div>
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            <div className="flex items-center space-x-6">
+              <img 
+                src="https://cdn.poehali.dev/files/f7c22529-8aec-4d54-8fdf-65bbb1fc6ed7.png" 
+                alt="Мир шахмат" 
+                className="h-24 w-auto"
+              />
+              <div>
+                <h1 className="text-xl font-heading font-semibold text-gray-900">Мир шахмат</h1>
+                <p className="text-sm text-gray-500">Центр поддержки детского шахматного спорта</p>
+              </div>
             </div>
-          </div>
           <div className="hidden md:flex items-center space-x-8">
             {navigationItems.map((item) => (
               <button
@@ -90,8 +91,15 @@ const Index = () => {
             ))}
           </div>
         </div>
+      </nav>
+      <div className="bg-gradient-to-r from-primary/10 to-gold-100/50 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-heading font-bold text-center text-gray-900">
+            Центр поддержки детского шахматного спорта "Мир шахмат"
+          </h2>
+        </div>
       </div>
-    </nav>
+    </div>
   );
 
   const renderHome = () => (
