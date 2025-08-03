@@ -29,6 +29,7 @@ const Index = () => {
     userType: 'child' as 'child' | 'parent' | 'trainer',
     password: ''
   });
+  const [selectedTournament, setSelectedTournament] = useState<any>(null);
 
   // Тестовые аккаунты
   const testUsers: UserData[] = [
@@ -843,7 +844,6 @@ const Index = () => {
   );
 
   const renderResults = () => {
-    const [selectedTournament, setSelectedTournament] = useState<any>(null);
 
     const completedTournaments = [
       {
