@@ -511,13 +511,24 @@ const InteractiveChessBoard = () => {
           if (col === 6) { // Короткая рокировка
             // Перемещаем ладью с h на f
             const rook = newBoard[kingRow][7];
-            newBoard[kingRow][7] = null;
-            newBoard[kingRow][5] = rook;
+            if (rook && rook.type === 'rook') {
+              newBoard[kingRow][7] = null;
+              newBoard[kingRow][5] = rook;
+            }
           } else if (col === 2) { // Длинная рокировка
             // Перемещаем ладью с a на d
             const rook = newBoard[kingRow][0];
-            newBoard[kingRow][0] = null;
-            newBoard[kingRow][3] = rook;
+            console.log('Длинная рокировка:', {
+              kingRow, 
+              rookBefore: rook, 
+              rookType: rook?.type,
+              targetSquare: `${kingRow},3`
+            });
+            if (rook && rook.type === 'rook') {
+              newBoard[kingRow][0] = null;
+              newBoard[kingRow][3] = rook;
+              console.log('Ладья перемещена с', `${kingRow},0`, 'на', `${kingRow},3`);
+            }
           }
         }
         
