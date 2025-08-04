@@ -69,10 +69,10 @@ const InteractiveChessBoard = () => {
   };
 
   // Функция для проверки трёхкратного повторения позиции
-  const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], currentHistory: GameMove[]): boolean => {
+  const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], currentHistory: GameMove[]): { isRepetition: boolean; moveNumber?: number; totalMoves?: number } => {
     // Слишком мало ходов для повторения
     if (currentHistory.length < 4) {
-      return false;
+      return { isRepetition: false };
     }
 
     // Преобразуем доску в строку для сравнения
@@ -84,16 +84,26 @@ const InteractiveChessBoard = () => {
 
     const currentPosition = boardToString(newBoard);
     let repetitionCount = 0;
+    const matchingMoves: number[] = [];
 
     // Проверяем все предыдущие позиции в истории
-    for (const move of currentHistory) {
-      if (boardToString(move.boardAfterMove) === currentPosition) {
+    for (let i = 0; i < currentHistory.length; i++) {
+      if (boardToString(currentHistory[i].boardAfterMove) === currentPosition) {
         repetitionCount++;
+        matchingMoves.push(i + 1); // +1 для человеческого счёта ходов
       }
     }
 
-    // Возвращаем true если позиция встречалась 2 или более раз (+ текущая = 3)
-    return repetitionCount >= 2;
+    // Возвращаем подробную информацию если позиция встречалась 2 или более раз (+ текущая = 3)
+    if (repetitionCount >= 2) {
+      return { 
+        isRepetition: true, 
+        moveNumber: Math.ceil((currentHistory.length + 1) / 2),
+        totalMoves: currentHistory.length + 1
+      };
+    }
+
+    return { isRepetition: false };
   };
 
   const isSquareAttacked = (board: (ChessPiece | null)[][], targetRow: number, targetCol: number, byColor: 'white' | 'black'): boolean => {
@@ -469,7 +479,8 @@ const InteractiveChessBoard = () => {
         setMoveNumber(prev => prev + 1);
         
         // Проверяем трёхкратное повторение позиции
-        if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1)])) {
+        const repetitionCheck = checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1)]);
+        if (repetitionCheck.isRepetition) {
           setGameStatus('draw');
           setShowEndGameModal(true);
           setIsAiThinking(false);
@@ -698,7 +709,8 @@ const InteractiveChessBoard = () => {
         }));
         
         // Проверяем трёхкратное повторение позиции
-        if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1)])) {
+        const repetitionCheck = checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1)]);
+        if (repetitionCheck.isRepetition) {
           setGameStatus('draw');
           setShowEndGameModal(true);
           return;
@@ -840,22 +852,40 @@ const InteractiveChessBoard = () => {
                   ) : gameStatus === 'draw' ? (
                     <>
                       <div className="text-7xl mb-4 animate-pulse">🔄</div>
-                      <h2 className="text-4xl font-bold text-primary mb-3">НИЧЬЯ!</h2>
+                      <h2 className="text-4xl font-bold text-primary mb-3">НИЧЬЯ ОБЪЯВЛЕНА!</h2>
                       <div className="bg-blue-100 rounded-lg p-4 mb-4">
                         <div className="text-3xl mb-2">🔄</div>
                         <p className="text-lg font-semibold text-blue-800">
                           Трёхкратное повторение позиции
                         </p>
-                        <p className="text-sm text-blue-600 mt-1">
-                          Одинаковая позиция повторилась 3 раза
+                        <p className="text-sm text-blue-600 mt-2">
+                          Одинаковая позиция повторилась 3 раза подряд
                         </p>
+                        <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                          <p className="font-semibold">🏛️ Шахматное правило:</p>
+                          <p>Если одна и та же позиция возникает трижды, автоматически объявляется ничья</p>
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600 space-y-1">
-                        <p>Количество ходов: <span className="font-bold">{gameHistory.moves.length}</span></p>
-                        <p>Время партии: <span className="font-bold">
-                          {Math.floor((900 - Math.min(timers.white, timers.black)) / 60)}:
-                          {((900 - Math.min(timers.white, timers.black)) % 60).toString().padStart(2, '0')}
-                        </span></p>
+                      <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>📍 <span className="font-semibold">Ничья на ходу:</span> 
+                            <span className="font-bold text-primary ml-1">
+                              {Math.ceil(gameHistory.moves.length / 2)}
+                            </span>
+                          </p>
+                          <p>🔢 <span className="font-semibold">Всего ходов:</span> 
+                            <span className="font-bold">{gameHistory.moves.length}</span>
+                          </p>
+                          <p>⏱️ <span className="font-semibold">Время партии:</span> 
+                            <span className="font-bold">
+                              {Math.floor((900 - Math.min(timers.white, timers.black)) / 60)}:
+                              {((900 - Math.min(timers.white, timers.black)) % 60).toString().padStart(2, '0')}
+                            </span>
+                          </p>
+                          <p>⚖️ <span className="font-semibold">Результат:</span> 
+                            <span className="font-bold text-blue-600">½ - ½</span>
+                          </p>
+                        </div>
                       </div>
                     </>
                   ) : (
