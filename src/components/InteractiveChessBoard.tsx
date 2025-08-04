@@ -70,8 +70,8 @@ const InteractiveChessBoard = () => {
 
   // Функция для проверки трёхкратного повторения позиции
   const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], currentHistory: GameMove[]): { isRepetition: boolean; moveNumber?: number; totalMoves?: number } => {
-    // Слишком мало ходов для повторения
-    if (currentHistory.length < 4) {
+    // Слишком мало ходов для повторения (минимум 8 ходов - 4 полных хода каждой стороны)
+    if (currentHistory.length < 8) {
       return { isRepetition: false };
     }
 
@@ -94,13 +94,26 @@ const InteractiveChessBoard = () => {
       }
     }
 
-    // Возвращаем подробную информацию если позиция встречалась 2 или более раз (+ текущая = 3)
-    if (repetitionCount >= 2) {
-      return { 
-        isRepetition: true, 
-        moveNumber: Math.ceil((currentHistory.length + 1) / 2),
-        totalMoves: currentHistory.length + 1
-      };
+    // Временная отладка для выявления проблемы
+    if (currentHistory.length >= 4) {
+      console.log(`Проверка повторений: ходов=${currentHistory.length}, повторений=${repetitionCount}, позиция=${currentPosition.slice(0, 20)}...`);
+    }
+
+    // Возвращаем подробную информацию если позиция встречалась ровно 2 раза в истории (+ текущая = 3)
+    // И убеждаемся что это действительно значимое повторение (не случайное)
+    if (repetitionCount === 2 && matchingMoves.length >= 2) {
+      // Проверяем что повторения не слишком близко друг к другу (минимум 2 хода между повторениями)
+      const isValidRepetition = matchingMoves.every((moveIndex, idx) => 
+        idx === 0 || moveIndex - matchingMoves[idx - 1] >= 2
+      );
+      
+      if (isValidRepetition) {
+        return { 
+          isRepetition: true, 
+          moveNumber: Math.ceil((currentHistory.length + 1) / 2),
+          totalMoves: currentHistory.length + 1
+        };
+      }
     }
 
     return { isRepetition: false };
