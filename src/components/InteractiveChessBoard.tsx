@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Icon from '@/components/ui/icon';
 
 interface ChessPiece {
   type: 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'pawn';
@@ -9,6 +10,20 @@ interface ChessPiece {
 interface Position {
   row: number;
   col: number;
+}
+
+interface GameMove {
+  from: Position;
+  to: Position;
+  piece: ChessPiece;
+  capturedPiece: ChessPiece | null;
+  notation: string;
+  boardAfterMove: (ChessPiece | null)[][];
+}
+
+interface GameHistory {
+  moves: GameMove[];
+  currentMoveIndex: number;
 }
 
 const InteractiveChessBoard = () => {
@@ -25,6 +40,19 @@ const InteractiveChessBoard = () => {
     position: Position;
     color: 'white' | 'black';
   } | null>(null);
+
+  // Таймеры игроков (в секундах)
+  const [timers, setTimers] = useState({ white: 600, black: 600 }); // 10 минут
+  const [timerActive, setTimerActive] = useState(false);
+  
+  // История игры
+  const [gameHistory, setGameHistory] = useState<GameHistory>({
+    moves: [],
+    currentMoveIndex: -1
+  });
+  
+  // Номер хода
+  const [moveNumber, setMoveNumber] = useState(1);
 
   // Компонент для отображения фигуры
   const PieceComponent = ({ piece }: { piece: ChessPiece }) => {
@@ -108,6 +136,84 @@ const InteractiveChessBoard = () => {
   const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
   const [isInCheck, setIsInCheck] = useState<{ white: boolean; black: boolean }>({ white: false, black: false });
   const [gameStatus, setGameStatus] = useState<'playing' | 'check' | 'checkmate' | 'stalemate'>('playing');
+
+  // Эффект для работы таймеров
+  useEffect(() => {
+    if (!timerActive || gameStatus === 'checkmate' || gameStatus === 'stalemate') return;
+
+    const interval = setInterval(() => {
+      setTimers(prev => {
+        const newTimers = {
+          ...prev,
+          [currentPlayer]: Math.max(0, prev[currentPlayer] - 1)
+        };
+        
+        // Проверяем окончание времени
+        if (newTimers[currentPlayer] === 0) {
+          setGameStatus('checkmate');
+          setTimerActive(false);
+        }
+        
+        return newTimers;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerActive, currentPlayer, gameStatus]);
+
+  // Функция для форматирования времени
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Функция для конвертации позиции в шахматную нотацию
+  const positionToNotation = (pos: Position): string => {
+    const files = 'abcdefgh';
+    return files[pos.col] + (8 - pos.row);
+  };
+
+  // Функция для создания записи хода
+  const createMoveNotation = (
+    piece: ChessPiece, 
+    from: Position, 
+    to: Position, 
+    capturedPiece: ChessPiece | null,
+    isCheck: boolean,
+    isCheckmate: boolean
+  ): string => {
+    let notation = '';
+    
+    // Тип фигуры (кроме пешки)
+    if (piece.type !== 'pawn') {
+      const pieceSymbols = {
+        king: 'K', queen: 'Q', rook: 'R', 
+        bishop: 'B', knight: 'N'
+      };
+      notation += pieceSymbols[piece.type as keyof typeof pieceSymbols];
+    }
+    
+    // Взятие
+    if (capturedPiece) {
+      if (piece.type === 'pawn') {
+        notation += positionToNotation(from)[0]; // файл пешки
+      }
+      notation += 'x';
+    }
+    
+    // Конечная позиция
+    notation += positionToNotation(to);
+    
+    // Шах или мат
+    if (isCheckmate) {
+      notation += '#';
+    } else if (isCheck) {
+      notation += '+';
+    }
+    
+    return notation;
+  };
 
   // Проверка, является ли клетка светлой
   const isLightSquare = (row: number, col: number): boolean => {
@@ -729,6 +835,41 @@ const InteractiveChessBoard = () => {
       // Проверяем, есть ли у следующего игрока легальные ходы (используем новую доску)
       const nextPlayerMoves = getAllPossibleMovesForPlayerOnBoard(newBoard, nextPlayer);
       
+      // Создаем запись хода
+      if (movingPiece) {
+        const capturedPiece = board[row][col];
+        const isCheckmate = isNextPlayerInCheck && nextPlayerMoves.length === 0;
+        const notation = createMoveNotation(movingPiece, selectedSquare, { row, col }, capturedPiece, isNextPlayerInCheck, isCheckmate);
+        
+        const newMove: GameMove = {
+          from: selectedSquare,
+          to: { row, col },
+          piece: movingPiece,
+          capturedPiece,
+          notation,
+          boardAfterMove: newBoard.map(r => [...r])
+        };
+        
+        // Добавляем ход в историю
+        setGameHistory(prev => {
+          const newHistory = {
+            moves: [...prev.moves.slice(0, prev.currentMoveIndex + 1), newMove],
+            currentMoveIndex: prev.currentMoveIndex + 1
+          };
+          return newHistory;
+        });
+        
+        // Увеличиваем номер хода для белых
+        if (currentPlayer === 'black') {
+          setMoveNumber(prev => prev + 1);
+        }
+        
+        // Запускаем таймер после первого хода
+        if (!timerActive) {
+          setTimerActive(true);
+        }
+      }
+      
       setBoard(newBoard);
       setSelectedSquare(null);
       setPossibleMoves([]);
@@ -829,6 +970,25 @@ const InteractiveChessBoard = () => {
     }
   };
 
+  // Функция для перехода к определенному ходу
+  const goToMove = (moveIndex: number) => {
+    if (moveIndex < 0) {
+      // Возвращаемся к начальной позиции
+      setBoard(initializeBoard());
+      setCurrentPlayer('white');
+      setGameHistory(prev => ({ ...prev, currentMoveIndex: -1 }));
+      setMoveNumber(1);
+    } else if (moveIndex < gameHistory.moves.length) {
+      const targetMove = gameHistory.moves[moveIndex];
+      setBoard(targetMove.boardAfterMove.map(r => [...r]));
+      setCurrentPlayer(moveIndex % 2 === 0 ? 'black' : 'white');
+      setGameHistory(prev => ({ ...prev, currentMoveIndex: moveIndex }));
+      setMoveNumber(Math.floor(moveIndex / 2) + 1);
+    }
+    setSelectedSquare(null);
+    setPossibleMoves([]);
+  };
+
   // Сброс игры
   const resetGame = () => {
     setBoard(initializeBoard());
@@ -844,11 +1004,17 @@ const InteractiveChessBoard = () => {
       blackQueenSide: true
     });
     setPawnPromotion(null);
+    setTimers({ white: 600, black: 600 });
+    setTimerActive(false);
+    setGameHistory({ moves: [], currentMoveIndex: -1 });
+    setMoveNumber(1);
   };
 
   return (
-    <div className="flex flex-col items-center space-y-6">
-      {/* Всплывающее окно с результатом игры */}
+    <div className="flex flex-col lg:flex-row items-start justify-center gap-8 p-4">
+      {/* Основная игровая область */}
+      <div className="flex flex-col items-center space-y-6">
+        {/* Всплывающее окно с результатом игры */}
       {(gameStatus === 'checkmate' || gameStatus === 'stalemate') && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center border-4 border-primary">
@@ -943,6 +1109,34 @@ const InteractiveChessBoard = () => {
           </div>
         </div>
       )}
+
+      {/* Таймеры игроков */}
+      <div className="flex justify-between items-center w-full max-w-md mb-4">
+        <div className={`p-4 rounded-lg border-2 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+          <div className="text-center">
+            <div className="text-sm text-gray-600 mb-1">Черные</div>
+            <div className={`text-2xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
+              {formatTime(timers.black)}
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center mx-4">
+          <div className="text-lg font-semibold">Ход {moveNumber}</div>
+          <div className="text-sm text-gray-600">
+            {gameHistory.moves.length} ходов
+          </div>
+        </div>
+        
+        <div className={`p-4 rounded-lg border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+          <div className="text-center">
+            <div className="text-sm text-gray-600 mb-1">Белые</div>
+            <div className={`text-2xl font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
+              {formatTime(timers.white)}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Информация о игре */}
       <div className="text-center">
@@ -1042,6 +1236,98 @@ const InteractiveChessBoard = () => {
         <p>Кликните на фигуру чтобы выбрать её, затем кликните на подсвеченную клетку чтобы сделать ход.</p>
       </div>
     </div>
+
+    {/* Панель истории ходов */}
+    <div className="w-full lg:w-80 bg-white rounded-2xl shadow-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-heading font-bold">История партии</h3>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => goToMove(-1)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="К началу"
+          >
+            <Icon name="ChevronsLeft" size={16} />
+          </button>
+          <button
+            onClick={() => goToMove(Math.max(-1, gameHistory.currentMoveIndex - 1))}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Предыдущий ход"
+          >
+            <Icon name="ChevronLeft" size={16} />
+          </button>
+          <button
+            onClick={() => goToMove(Math.min(gameHistory.moves.length - 1, gameHistory.currentMoveIndex + 1))}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Следующий ход"
+          >
+            <Icon name="ChevronRight" size={16} />
+          </button>
+          <button
+            onClick={() => goToMove(gameHistory.moves.length - 1)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="К концу"
+          >
+            <Icon name="ChevronsRight" size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="max-h-96 overflow-y-auto">
+        {gameHistory.moves.length === 0 ? (
+          <div className="text-center text-gray-500 py-4">
+            <Icon name="Clock" size={48} className="mx-auto mb-2 opacity-50" />
+            <p>Партия еще не началась</p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {/* Кнопка для начальной позиции */}
+            <button
+              onClick={() => goToMove(-1)}
+              className={`w-full text-left p-2 rounded-lg transition-colors ${
+                gameHistory.currentMoveIndex === -1 
+                  ? 'bg-primary text-black font-semibold' 
+                  : 'hover:bg-gray-100'
+              }`}
+            >
+              <span className="text-sm text-gray-600">Начальная позиция</span>
+            </button>
+
+            {/* Список ходов */}
+            {gameHistory.moves.map((move, index) => {
+              const moveNum = Math.floor(index / 2) + 1;
+              const isWhiteMove = index % 2 === 0;
+              const isCurrentMove = index === gameHistory.currentMoveIndex;
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => goToMove(index)}
+                  className={`w-full text-left p-2 rounded-lg transition-colors ${
+                    isCurrentMove 
+                      ? 'bg-primary text-black font-semibold' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <span>
+                      {isWhiteMove && `${moveNum}. `}
+                      {!isWhiteMove && moveNum === 1 && '1... '}
+                      {!isWhiteMove && moveNum > 1 && ''}
+                      {move.notation}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {positionToNotation(move.from)}-{positionToNotation(move.to)}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
   );
 };
 
