@@ -428,16 +428,16 @@ const InteractiveChessBoard = () => {
     }
   }, [currentPlayer, gameMode, gameStatus]);
 
-  // Эффект для автоматического запуска таймера после выбора режима игры
+  // Эффект для автоматического запуска таймера после первого хода
   useEffect(() => {
-    if (gameStarted && gameHistory.moves.length === 0) {
+    if (gameStarted && gameHistory.moves.length > 0 && !timerActive) {
       setTimerActive(true);
     }
-  }, [gameStarted, gameHistory.moves.length]);
+  }, [gameStarted, gameHistory.moves.length, timerActive]);
 
   // Таймеры игроков
   useEffect(() => {
-    if (!timerActive || gameStatus !== 'playing') return;
+    if (!timerActive || (gameStatus !== 'playing' && gameStatus !== 'check')) return;
 
     const interval = setInterval(() => {
       setTimers(prev => {
