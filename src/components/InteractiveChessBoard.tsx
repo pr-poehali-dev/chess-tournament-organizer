@@ -471,11 +471,14 @@ const InteractiveChessBoard = () => {
 
   // Эффект для ходов ИИ
   useEffect(() => {
+    const isAtLatestMove = gameHistory.moves.length === 0 || 
+                          gameHistory.currentMoveIndex === gameHistory.moves.length - 1;
+    
     if (gameMode === 'human-vs-ai' && currentPlayer === 'black' && 
-        (gameStatus === 'playing' || gameStatus === 'check') && !isAiThinking) {
+        (gameStatus === 'playing' || gameStatus === 'check') && !isAiThinking && isAtLatestMove) {
       makeAiMove();
     }
-  }, [currentPlayer, gameMode, gameStatus]);
+  }, [currentPlayer, gameMode, gameStatus, gameHistory.currentMoveIndex, gameHistory.moves.length]);
 
   // Эффект для автоматического запуска таймера после первого хода
   useEffect(() => {
