@@ -6,6 +6,7 @@ import PlayerTimers from './chess/PlayerTimers';
 import MoveHistory from './chess/MoveHistory';
 import Icon from '@/components/ui/icon';
 import { ChessPiece, Position, GameMove } from './chess/types';
+import { ChessAI } from './chess/ai/chessAI';
 
 const InteractiveChessBoard = () => {
   const {
@@ -332,92 +333,36 @@ const InteractiveChessBoard = () => {
     return notation;
   };
 
-  // ИИ логика
+  // ИИ логика с минимакс алгоритмом
   const makeAiMove = () => {
     setIsAiThinking(true);
     
     setTimeout(() => {
-      const allMoves: { from: Position; to: Position; piece: ChessPiece; score: number }[] = [];
+      // Используем продвинутый ИИ с минимакс алгоритмом
+      const bestMove = ChessAI.getBestMove(board, aiDifficulty);
       
-      // Собираем все возможные ходы для черных
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          const piece = board[row][col];
-          if (piece && piece.color === 'black') {
-            const moves = getPossibleMoves(board, row, col);
-            moves.forEach(move => {
-              // Проверяем что ход действительно легален
-              if (isMoveLegal(board, row, col, move.row, move.col)) {
-                // Создаем тестовую доску для оценки хода
-                const testBoard = board.map(r => [...r]);
-                testBoard[row][col] = null;
-                testBoard[move.row][move.col] = piece;
-                
-                let score = 0;
-                
-                // Высший приоритет: защита от шаха
-                const isCurrentlyInCheck = isKingInCheck(board, 'black');
-                const willBeInCheck = isKingInCheck(testBoard, 'black');
-                
-                if (isCurrentlyInCheck && !willBeInCheck) {
-                  score += 1000; // Очень высокий приоритет для защиты от шаха
-                } else if (isCurrentlyInCheck && willBeInCheck) {
-                  score -= 1000; // Избегаем ходов, которые не спасают от шаха
-                }
-                
-                // Бонус за взятие фигур
-                const capturedPiece = board[move.row][move.col];
-                if (capturedPiece) {
-                  const pieceValues = {
-                    pawn: 1, knight: 3, bishop: 3, 
-                    rook: 5, queen: 9, king: 0
-                  };
-                  score += pieceValues[capturedPiece.type] * 10;
-                }
-                
-                // Небольшой случайный фактор для разнообразия
-                score += Math.random() * 2;
-                
-                allMoves.push({
-                  from: { row, col },
-                  to: move,
-                  piece,
-                  score
-                });
-              }
-            });
-          }
-        }
-      }
-      
-      if (allMoves.length > 0) {
-        // Сортируем ходы по оценке (лучшие первыми)
-        allMoves.sort((a, b) => b.score - a.score);
+      if (bestMove) {
         
-        // Выбираем один из 3 лучших ходов для разнообразия
-        const topMoves = allMoves.slice(0, Math.min(3, allMoves.length));
-        const selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
-        
-        const capturedPiece = board[selectedMove.to.row][selectedMove.to.col];
+        const capturedPiece = board[bestMove.to.row][bestMove.to.col];
         const newBoard = board.map(r => [...r]);
-        newBoard[selectedMove.from.row][selectedMove.from.col] = null;
-        newBoard[selectedMove.to.row][selectedMove.to.col] = selectedMove.piece;
+        newBoard[bestMove.from.row][bestMove.from.col] = null;
+        newBoard[bestMove.to.row][bestMove.to.col] = bestMove.piece;
         
         // Проверяем превращение пешки
-        if (selectedMove.piece.type === 'pawn' && selectedMove.to.row === 7) {
-          newBoard[selectedMove.to.row][selectedMove.to.col] = {
+        if (bestMove.piece.type === 'pawn' && bestMove.to.row === 7) {
+          newBoard[bestMove.to.row][bestMove.to.col] = {
             type: 'queen',
             color: 'black',
             symbol: '♛'
           };
         }
         
-        const notation = createMoveNotation(selectedMove.piece, selectedMove.from, selectedMove.to, capturedPiece);
+        const notation = createMoveNotation(bestMove.piece, bestMove.from, bestMove.to, capturedPiece);
         
         const gameMove: GameMove = {
-          from: selectedMove.from,
-          to: selectedMove.to,
-          piece: selectedMove.piece,
+          from: bestMove.from,
+          to: bestMove.to,
+          piece: bestMove.piece,
           capturedPiece,
           notation,
           boardAfterMove: newBoard.map(r => [...r])
@@ -446,7 +391,7 @@ const InteractiveChessBoard = () => {
       }
       
       setIsAiThinking(false);
-    }, 1500); // Задержка для имитации "размышлений"
+    }, aiDifficulty === 'easy' ? 800 : aiDifficulty === 'medium' ? 1200 : 2000); // Разная задержка по сложности
   };
 
   // Эффект для ходов ИИ
