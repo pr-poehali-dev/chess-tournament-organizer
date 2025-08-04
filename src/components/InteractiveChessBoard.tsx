@@ -68,6 +68,31 @@ const InteractiveChessBoard = () => {
     return null;
   };
 
+  // Функция для проверки трёхкратного повторения позиции
+  const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], history: GameMove[]): boolean => {
+    // Преобразуем доску в строку для сравнения
+    const boardToString = (board: (ChessPiece | null)[][]): string => {
+      return board.map(row => 
+        row.map(piece => piece ? `${piece.color}${piece.type}` : '').join('')
+      ).join('');
+    };
+
+    const currentPosition = boardToString(newBoard);
+    let repetitionCount = 1; // Текущая позиция уже считается
+
+    // Проверяем все предыдущие позиции
+    for (const move of history) {
+      if (boardToString(move.boardAfterMove) === currentPosition) {
+        repetitionCount++;
+        if (repetitionCount >= 3) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   const isSquareAttacked = (board: (ChessPiece | null)[][], targetRow: number, targetCol: number, byColor: 'white' | 'black'): boolean => {
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
@@ -440,6 +465,14 @@ const InteractiveChessBoard = () => {
         }));
         setMoveNumber(prev => prev + 1);
         
+        // Проверяем трёхкратное повторение позиции
+        if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1), gameMove])) {
+          setGameStatus('draw');
+          setShowEndGameModal(true);
+          setIsAiThinking(false);
+          return;
+        }
+        
         // Проверяем шах/мат для белых после хода ИИ
         const isCheck = isKingInCheck(newBoard, 'white');
         setIsInCheck(prev => ({
@@ -661,6 +694,13 @@ const InteractiveChessBoard = () => {
           [nextPlayer]: isCheck
         }));
         
+        // Проверяем трёхкратное повторение позиции
+        if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1), gameMove])) {
+          setGameStatus('draw');
+          setShowEndGameModal(true);
+          return;
+        }
+        
         // Проверяем есть ли доступные ходы у следующего игрока
         const availableMoves = ChessAI.getAllMoves(newBoard, nextPlayer);
         
@@ -784,6 +824,27 @@ const InteractiveChessBoard = () => {
                         </p>
                         <p className="text-sm text-red-600 mt-1">
                           Король под атакой и не может спастись
+                        </p>
+                      </div>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>Количество ходов: <span className="font-bold">{gameHistory.moves.length}</span></p>
+                        <p>Время партии: <span className="font-bold">
+                          {Math.floor((900 - Math.min(timers.white, timers.black)) / 60)}:
+                          {((900 - Math.min(timers.white, timers.black)) % 60).toString().padStart(2, '0')}
+                        </span></p>
+                      </div>
+                    </>
+                  ) : gameStatus === 'draw' ? (
+                    <>
+                      <div className="text-7xl mb-4 animate-pulse">🔄</div>
+                      <h2 className="text-4xl font-bold text-primary mb-3">НИЧЬЯ!</h2>
+                      <div className="bg-blue-100 rounded-lg p-4 mb-4">
+                        <div className="text-3xl mb-2">🔄</div>
+                        <p className="text-lg font-semibold text-blue-800">
+                          Трёхкратное повторение позиции
+                        </p>
+                        <p className="text-sm text-blue-600 mt-1">
+                          Одинаковая позиция повторилась 3 раза
                         </p>
                       </div>
                       <div className="text-sm text-gray-600 space-y-1">

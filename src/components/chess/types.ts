@@ -39,4 +39,4 @@ export interface PawnPromotion {
 
 export type GameMode = 'human-vs-human' | 'human-vs-ai';
 export type AiDifficulty = 'easy' | 'medium' | 'hard';
-export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate';
+export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate' | 'draw';
