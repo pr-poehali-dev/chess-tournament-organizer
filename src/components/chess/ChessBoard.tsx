@@ -26,10 +26,38 @@ const ChessBoard = ({
   const isPossibleMove = (row: number, col: number) =>
     possibleMoves.some(move => move.row === row && move.col === col);
 
+  // Буквы для колонок (a-h)
+  const columnLabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  // Цифры для рядов (8-1, так как ряд 0 это 8-й ряд)
+  const rowLabels = ['8', '7', '6', '5', '4', '3', '2', '1'];
+
   return (
     <div className="bg-white rounded-2xl shadow-2xl p-6">
-      <div className="grid grid-cols-8 gap-0 border-2 border-gray-800">
-        {Array.from({ length: 64 }, (_, i) => {
+      <div className="relative">
+        {/* Верхние буквы колонок */}
+        <div className="flex justify-center mb-2">
+          <div className="grid grid-cols-8 gap-0 w-fit">
+            {columnLabels.map((label, index) => (
+              <div key={`top-${index}`} className="w-16 h-6 flex items-center justify-center text-sm font-semibold text-gray-700">
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex items-center">
+          {/* Левые цифры рядов */}
+          <div className="flex flex-col mr-2">
+            {rowLabels.map((label, index) => (
+              <div key={`left-${index}`} className="w-6 h-16 flex items-center justify-center text-sm font-semibold text-gray-700">
+                {label}
+              </div>
+            ))}
+          </div>
+          
+          {/* Шахматная доска */}
+          <div className="grid grid-cols-8 gap-0 border-2 border-gray-800">
+            {Array.from({ length: 64 }, (_, i) => {
           const row = Math.floor(i / 8);
           const col = i % 8;
           const piece = board[row][col];
@@ -67,6 +95,28 @@ const ChessBoard = ({
             </div>
           );
         })}
+          </div>
+          
+          {/* Правые цифры рядов */}
+          <div className="flex flex-col ml-2">
+            {rowLabels.map((label, index) => (
+              <div key={`right-${index}`} className="w-6 h-16 flex items-center justify-center text-sm font-semibold text-gray-700">
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Нижние буквы колонок */}
+        <div className="flex justify-center mt-2">
+          <div className="grid grid-cols-8 gap-0 w-fit">
+            {columnLabels.map((label, index) => (
+              <div key={`bottom-${index}`} className="w-16 h-6 flex items-center justify-center text-sm font-semibold text-gray-700">
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
