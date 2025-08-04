@@ -1110,33 +1110,7 @@ const InteractiveChessBoard = () => {
         </div>
       )}
 
-      {/* Таймеры игроков */}
-      <div className="flex justify-between items-center w-full max-w-md mb-4">
-        <div className={`p-4 rounded-lg border-2 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
-          <div className="text-center">
-            <div className="text-sm text-gray-600 mb-1">Черные</div>
-            <div className={`text-2xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
-              {formatTime(timers.black)}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex flex-col items-center mx-4">
-          <div className="text-lg font-semibold">Ход {moveNumber}</div>
-          <div className="text-sm text-gray-600">
-            {gameHistory.moves.length} ходов
-          </div>
-        </div>
-        
-        <div className={`p-4 rounded-lg border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
-          <div className="text-center">
-            <div className="text-sm text-gray-600 mb-1">Белые</div>
-            <div className={`text-2xl font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
-              {formatTime(timers.white)}
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Информация о игре */}
       <div className="text-center">
@@ -1237,8 +1211,43 @@ const InteractiveChessBoard = () => {
       </div>
     </div>
 
-    {/* Панель истории ходов */}
-    <div className="w-full lg:w-80 bg-white rounded-2xl shadow-2xl p-6">
+    {/* Правая панель с таймерами и историей */}
+    <div className="w-full lg:w-80 flex flex-col gap-6">
+      
+      {/* Таймеры игроков */}
+      <div className="bg-white rounded-2xl shadow-2xl p-6">
+        
+        {/* Таймер черных */}
+        <div className={`p-4 rounded-lg border-2 mb-4 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+          <div className="text-center">
+            <div className="text-sm text-gray-600 mb-1">Черные</div>
+            <div className={`text-2xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
+              {formatTime(timers.black)}
+            </div>
+          </div>
+        </div>
+        
+        {/* Информация о ходе */}
+        <div className="text-center py-2 border-y border-gray-200 mb-4">
+          <div className="text-lg font-semibold">Ход {moveNumber}</div>
+          <div className="text-sm text-gray-600">
+            {gameHistory.moves.length} ходов сделано
+          </div>
+        </div>
+        
+        {/* Таймер белых */}
+        <div className={`p-4 rounded-lg border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+          <div className="text-center">
+            <div className="text-sm text-gray-600 mb-1">Белые</div>
+            <div className={`text-2xl font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
+              {formatTime(timers.white)}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Панель истории ходов */}
+      <div className="bg-white rounded-2xl shadow-2xl p-6 flex-1 min-h-0">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-heading font-bold">История партии</h3>
         <div className="flex items-center gap-2">
@@ -1273,7 +1282,7 @@ const InteractiveChessBoard = () => {
         </div>
       </div>
 
-      <div className="max-h-96 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" style={{maxHeight: 'calc(100vh - 500px)'}}>
         {gameHistory.moves.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
             <Icon name="Clock" size={48} className="mx-auto mb-2 opacity-50" />
@@ -1326,6 +1335,8 @@ const InteractiveChessBoard = () => {
           </div>
         )}
       </div>
+    </div>
+    
     </div>
   </div>
   );
