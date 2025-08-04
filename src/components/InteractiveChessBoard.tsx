@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useChessGame } from './chess/hooks/useChessGame';
 import ChessBoard from './chess/ChessBoard';
 import GameModeSelector from './chess/GameModeSelector';
@@ -9,6 +9,8 @@ import { ChessPiece, Position, GameMove } from './chess/types';
 import { ChessAI } from './chess/ai/chessAI';
 
 const InteractiveChessBoard = () => {
+  const [showModeSelector, setShowModeSelector] = useState(false);
+  
   const {
     // State
     board,
@@ -587,18 +589,38 @@ const InteractiveChessBoard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-start justify-center gap-8">
         
+        {/* Кнопка начать игру */}
+        {!gameStarted && gameHistory.moves.length === 0 && (
+          <div className="w-full lg:w-80 flex flex-col items-center justify-center" style={{height: '640px'}}>
+            <div className="text-center space-y-6">
+              <div className="text-8xl mb-4">♟️</div>
+              <h1 className="text-4xl font-bold text-primary mb-2">Шахматы</h1>
+              <p className="text-gray-600 mb-8">Интеллектуальная игра для двоих</p>
+              <button
+                onClick={() => setShowModeSelector(true)}
+                className="px-8 py-4 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-xl transition-all transform hover:scale-105 shadow-lg"
+              >
+                🎮 Начать игру
+              </button>
+            </div>
+          </div>
+        )}
+        
         <GameModeSelector
           gameMode={gameMode}
           aiDifficulty={aiDifficulty}
           gameStarted={gameStarted}
           gameHistoryLength={gameHistory.moves.length}
+          showModeSelector={showModeSelector}
           onGameModeSelect={setGameMode}
           onAiDifficultySelect={setAiDifficulty}
           onStartGame={() => setGameStarted(true)}
+          onCloseModeSelector={() => setShowModeSelector(false)}
         />
 
-        {/* Основная игровая область */}
-        <div className="flex flex-col items-center space-y-6">
+        {/* Основная игровая область - показывается только если игра начата */}
+        {gameStarted && (
+          <div className="flex flex-col items-center space-y-6">
           
           {/* Всплывающее окно с результатом игры */}
           {(gameStatus === 'checkmate' || gameStatus === 'stalemate') && showEndGameModal && (
@@ -735,9 +757,11 @@ const InteractiveChessBoard = () => {
             <p>Кликните на фигуру чтобы выбрать её, затем кликните на подсвеченную клетку чтобы сделать ход.</p>
           </div>
         </div>
+        )}
 
-        {/* Правая панель с таймерами и историей */}
-        <div className="w-full lg:w-80 flex flex-col" style={{height: '640px'}}>
+        {/* Правая панель с таймерами и историей - показывается только если игра начата */}
+        {gameStarted && (
+          <div className="w-full lg:w-80 flex flex-col" style={{height: '640px'}}>
           
           {/* Таймер черных (сверху) */}
           <div className={`bg-white rounded-2xl shadow-2xl p-4 mb-4 border-2 ${currentPlayer === 'black' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
@@ -769,6 +793,7 @@ const InteractiveChessBoard = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

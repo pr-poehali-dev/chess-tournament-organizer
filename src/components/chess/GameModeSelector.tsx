@@ -5,9 +5,11 @@ interface GameModeSelectorProps {
   aiDifficulty: AiDifficulty;
   gameStarted: boolean;
   gameHistoryLength: number;
+  showModeSelector: boolean;
   onGameModeSelect: (mode: GameMode) => void;
   onAiDifficultySelect: (difficulty: AiDifficulty) => void;
   onStartGame: () => void;
+  onCloseModeSelector: () => void;
 }
 
 const GameModeSelector = ({
@@ -15,11 +17,13 @@ const GameModeSelector = ({
   aiDifficulty,
   gameStarted,
   gameHistoryLength,
+  showModeSelector,
   onGameModeSelect,
   onAiDifficultySelect,
-  onStartGame
+  onStartGame,
+  onCloseModeSelector
 }: GameModeSelectorProps) => {
-  if (gameStarted || gameHistoryLength > 0) {
+  if (!showModeSelector) {
     return null;
   }
 
@@ -37,6 +41,7 @@ const GameModeSelector = ({
             onClick={() => {
               onGameModeSelect('human-vs-human');
               onStartGame();
+              onCloseModeSelector();
             }}
             className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg transition-colors flex items-center justify-center gap-3"
           >
@@ -48,6 +53,7 @@ const GameModeSelector = ({
             onClick={() => {
               onGameModeSelect('human-vs-ai');
               onStartGame();
+              onCloseModeSelector();
             }}
             className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-lg transition-colors flex items-center justify-center gap-3"
           >
