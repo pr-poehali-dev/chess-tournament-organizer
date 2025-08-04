@@ -507,7 +507,18 @@ const InteractiveChessBoard = () => {
           [nextPlayer]: isCheck
         }));
         
-        if (isCheck) {
+        // Проверяем есть ли доступные ходы у следующего игрока
+        const availableMoves = ChessAI.getAllMoves(newBoard, nextPlayer);
+        
+        if (availableMoves.length === 0) {
+          if (isCheck) {
+            setGameStatus('checkmate');
+            setShowEndGameModal(true);
+          } else {
+            setGameStatus('stalemate');
+            setShowEndGameModal(true);
+          }
+        } else if (isCheck) {
           setGameStatus('check');
         } else {
           setGameStatus('playing');
@@ -580,27 +591,55 @@ const InteractiveChessBoard = () => {
           
           {/* Всплывающее окно с результатом игры */}
           {(gameStatus === 'checkmate' || gameStatus === 'stalemate') && showEndGameModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center border-4 border-primary">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg mx-4 text-center border-4 border-primary transform animate-scaleIn">
                 <div className="mb-6">
                   {gameStatus === 'checkmate' ? (
                     <>
-                      <div className="text-6xl mb-4">🏆</div>
-                      <h2 className="text-3xl font-bold text-primary mb-2">ПОБЕДА!</h2>
-                      <p className="text-xl text-gray-700">
-                        Выиграли <span className="font-bold text-primary">
-                          {currentPlayer === 'white' ? 'Черные' : 'Белые'}
-                        </span>
-                      </p>
-                      <p className="text-sm text-gray-500 mt-2">Мат</p>
+                      <div className="text-7xl mb-4 animate-bounce">
+                        {currentPlayer === 'white' ? '👑' : gameMode === 'human-vs-ai' ? '🤖' : '👑'}
+                      </div>
+                      <h2 className="text-4xl font-bold text-primary mb-3">
+                        {currentPlayer === 'white' ? 'ЧЕРНЫЕ ПОБЕДИЛИ!' : 
+                         gameMode === 'human-vs-ai' ? 'ВЫ ВЫИГРАЛИ!' : 'БЕЛЫЕ ПОБЕДИЛИ!'}
+                      </h2>
+                      <div className="bg-red-100 rounded-lg p-4 mb-4">
+                        <div className="text-3xl mb-2">♔</div>
+                        <p className="text-lg font-semibold text-red-800">
+                          Шах и мат!
+                        </p>
+                        <p className="text-sm text-red-600 mt-1">
+                          Король под атакой и не может спастись
+                        </p>
+                      </div>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>Количество ходов: <span className="font-bold">{gameHistory.moves.length}</span></p>
+                        <p>Время партии: <span className="font-bold">
+                          {Math.floor((900 - Math.min(timers.white, timers.black)) / 60)}:
+                          {((900 - Math.min(timers.white, timers.black)) % 60).toString().padStart(2, '0')}
+                        </span></p>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <div className="text-6xl mb-4">🤝</div>
-                      <h2 className="text-3xl font-bold text-primary mb-2">НИЧЬЯ!</h2>
-                      <p className="text-xl text-gray-700">
-                        Пат - нет доступных ходов
-                      </p>
+                      <div className="text-7xl mb-4 animate-pulse">🤝</div>
+                      <h2 className="text-4xl font-bold text-primary mb-3">НИЧЬЯ!</h2>
+                      <div className="bg-yellow-100 rounded-lg p-4 mb-4">
+                        <div className="text-3xl mb-2">⚖️</div>
+                        <p className="text-lg font-semibold text-yellow-800">
+                          Пат - тупиковая позиция
+                        </p>
+                        <p className="text-sm text-yellow-600 mt-1">
+                          Нет доступных ходов, но король не под угрозой
+                        </p>
+                      </div>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>Количество ходов: <span className="font-bold">{gameHistory.moves.length}</span></p>
+                        <p>Время партии: <span className="font-bold">
+                          {Math.floor((900 - Math.min(timers.white, timers.black)) / 60)}:
+                          {((900 - Math.min(timers.white, timers.black)) % 60).toString().padStart(2, '0')}
+                        </span></p>
+                      </div>
                     </>
                   )}
                 </div>
@@ -608,15 +647,15 @@ const InteractiveChessBoard = () => {
                 <div className="space-y-3">
                   <button
                     onClick={() => setShowEndGameModal(false)}
-                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg transition-colors"
+                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg transition-all transform hover:scale-105"
                   >
                     🔍 Анализировать партию
                   </button>
                   <button
                     onClick={resetGame}
-                    className="w-full px-6 py-3 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-lg transition-colors"
+                    className="w-full px-6 py-3 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-lg transition-all transform hover:scale-105"
                   >
-                    Играть снова
+                    🔄 Новая игра
                   </button>
                 </div>
               </div>
