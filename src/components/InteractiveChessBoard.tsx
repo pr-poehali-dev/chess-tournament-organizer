@@ -137,6 +137,17 @@ const InteractiveChessBoard = () => {
   const [isInCheck, setIsInCheck] = useState<{ white: boolean; black: boolean }>({ white: false, black: false });
   const [gameStatus, setGameStatus] = useState<'playing' | 'check' | 'checkmate' | 'stalemate'>('playing');
   const [showEndGameModal, setShowEndGameModal] = useState(true);
+  const [gameMode, setGameMode] = useState<'human-vs-human' | 'human-vs-ai'>('human-vs-human');
+  const [aiDifficulty, setAiDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [isAiThinking, setIsAiThinking] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+
+  // Эффект для автоматического запуска таймера после выбора режима игры
+  useEffect(() => {
+    if (gameStarted && gameHistory.moves.length === 0) {
+      setTimerActive(true);
+    }
+  }, [gameStarted, gameHistory.moves.length]);
 
   // Эффект для работы таймеров
   useEffect(() => {
@@ -161,6 +172,13 @@ const InteractiveChessBoard = () => {
 
     return () => clearInterval(interval);
   }, [timerActive, currentPlayer, gameStatus]);
+
+  // Эффект для автоматических ходов ИИ
+  useEffect(() => {
+    if (gameMode === 'human-vs-ai' && currentPlayer === 'black' && gameStatus === 'playing' && !isAiThinking) {
+      makeAiMove();
+    }
+  }, [gameMode, currentPlayer, gameStatus, isAiThinking]);
 
   // Функция для форматирования времени
   const formatTime = (seconds: number): string => {
@@ -753,6 +771,11 @@ const InteractiveChessBoard = () => {
 
   // Обработка клика по клетке
   const handleSquareClick = (row: number, col: number) => {
+    // Не разрешаем ходы во время хода ИИ
+    if (isAiThinking) return;
+    
+    // В режиме против ИИ разрешаем только белым ходить
+    if (gameMode === 'human-vs-ai' && currentPlayer === 'black') return;
     // Блокируем ходы при мате или пате
     if (gameStatus === 'checkmate' || gameStatus === 'stalemate') {
       return;
@@ -990,6 +1013,126 @@ const InteractiveChessBoard = () => {
     setPossibleMoves([]);
   };
 
+  // Простой ИИ-движок
+  const evaluatePosition = (board: (ChessPiece | null)[][], color: 'white' | 'black'): number => {
+    let score = 0;
+    const pieceValues = {
+      pawn: 1,
+      knight: 3,
+      bishop: 3,
+      rook: 5,
+      queen: 9,
+      king: 0
+    };
+    
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece) {
+          const value = pieceValues[piece.type];
+          if (piece.color === color) {
+            score += value;
+            // Бонус за позицию
+            if (piece.type === 'pawn') {
+              score += piece.color === 'white' ? (6 - row) * 0.1 : (row - 1) * 0.1;
+            }
+            if (piece.type === 'knight' || piece.type === 'bishop') {
+              score += (row >= 2 && row <= 5 && col >= 2 && col <= 5) ? 0.2 : 0;
+            }
+          } else {
+            score -= value;
+            if (piece.type === 'pawn') {
+              score -= piece.color === 'white' ? (6 - row) * 0.1 : (row - 1) * 0.1;
+            }
+            if (piece.type === 'knight' || piece.type === 'bishop') {
+              score -= (row >= 2 && row <= 5 && col >= 2 && col <= 5) ? 0.2 : 0;
+            }
+          }
+        }
+      }
+    }
+    
+    return score;
+  };
+  
+  const minimax = (board: (ChessPiece | null)[][], depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity): { score: number; move: any } => {
+    if (depth === 0) {
+      return { score: evaluatePosition(board, 'black'), move: null };
+    }
+    
+    const moves: any[] = [];
+    for (let fromRow = 0; fromRow < 8; fromRow++) {
+      for (let fromCol = 0; fromCol < 8; fromCol++) {
+        const piece = board[fromRow][fromCol];
+        if (piece && piece.color === (isMaximizing ? 'black' : 'white')) {
+          const rawMoves = getRawMovesOnBoard(board, fromRow, fromCol);
+          const legalMoves = rawMoves.filter(move => isMoveLegalOnBoard(board, fromRow, fromCol, move.row, move.col));
+          for (const move of legalMoves) {
+            moves.push({ from: { row: fromRow, col: fromCol }, to: move, piece });
+          }
+        }
+      }
+    }
+    
+    if (moves.length === 0) {
+      return { score: isMaximizing ? -1000 : 1000, move: null };
+    }
+    
+    let bestMove = null;
+    let bestScore = isMaximizing ? -Infinity : Infinity;
+    
+    for (const move of moves) {
+      const newBoard = board.map(row => [...row]);
+      const capturedPiece = newBoard[move.to.row][move.to.col];
+      newBoard[move.to.row][move.to.col] = newBoard[move.from.row][move.from.col];
+      newBoard[move.from.row][move.from.col] = null;
+      
+      const result = minimax(newBoard, depth - 1, !isMaximizing, alpha, beta);
+      const score = result.score;
+      
+      if (isMaximizing) {
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = move;
+        }
+        alpha = Math.max(alpha, score);
+      } else {
+        if (score < bestScore) {
+          bestScore = score;
+          bestMove = move;
+        }
+        beta = Math.min(beta, score);
+      }
+      
+      if (beta <= alpha) break;
+    }
+    
+    return { score: bestScore, move: bestMove };
+  };
+  
+  const makeAiMove = async () => {
+    if (currentPlayer !== 'black' || gameMode !== 'human-vs-ai' || gameStatus !== 'playing') return;
+    
+    setIsAiThinking(true);
+    
+    // Задержка для реалистичности
+    await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+    
+    const depth = aiDifficulty === 'easy' ? 1 : aiDifficulty === 'medium' ? 2 : 3;
+    const result = minimax(board, depth, true);
+    
+    if (result.move) {
+      const { from, to } = result.move;
+      // Симулируем клики для выполнения хода
+      handleSquareClick(from.row, from.col); // Выбираем фигуру
+      setTimeout(() => {
+        handleSquareClick(to.row, to.col); // Делаем ход
+      }, 100);
+    }
+    
+    setIsAiThinking(false);
+  };
+
   // Сброс игры
   const resetGame = () => {
     setBoard(initializeBoard());
@@ -1010,10 +1153,70 @@ const InteractiveChessBoard = () => {
     setGameHistory({ moves: [], currentMoveIndex: -1 });
     setMoveNumber(1);
     setShowEndGameModal(true);
+    setIsAiThinking(false);
+    setGameStarted(false);
   };
 
   return (
     <div className="flex flex-col lg:flex-row items-start justify-center gap-8 p-4">
+      {/* Меню выбора режима игры */}
+      {!gameStarted && gameHistory.moves.length === 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center border-4 border-primary">
+            <div className="mb-6">
+              <div className="text-6xl mb-4">♟️</div>
+              <h2 className="text-3xl font-bold text-primary mb-2">Шахматы онлайн</h2>
+              <p className="text-gray-600">Выберите режим игры</p>
+            </div>
+            
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  setGameMode('human-vs-human');
+                  setGameStarted(true);
+                }}
+                className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg transition-colors flex items-center justify-center gap-3"
+              >
+                <span className="text-2xl">👥</span>
+                Два игрока
+              </button>
+              
+              <button
+                onClick={() => {
+                  setGameMode('human-vs-ai');
+                  setGameStarted(true);
+                }}
+                className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-lg transition-colors flex items-center justify-center gap-3"
+              >
+                <span className="text-2xl">🤖</span>
+                Против компьютера
+              </button>
+              
+              {gameMode === 'human-vs-ai' && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-3">Уровень сложности:</p>
+                  <div className="flex gap-2">
+                    {(['easy', 'medium', 'hard'] as const).map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => setAiDifficulty(level)}
+                        className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          aiDifficulty === level
+                            ? 'bg-primary text-black'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        {level === 'easy' ? 'Легко' : level === 'medium' ? 'Средне' : 'Сложно'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Основная игровая область */}
       <div className="flex flex-col items-center space-y-6">
         {/* Всплывающее окно с результатом игры */}
