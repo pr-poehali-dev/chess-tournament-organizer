@@ -1167,29 +1167,14 @@ const InteractiveChessBoard = () => {
     </div>
 
     {/* Правая панель с таймерами и историей */}
-    <div className="w-full lg:w-80 flex flex-col gap-6">
+    <div className="w-full lg:w-80 flex flex-col gap-4">
       
-      {/* Таймеры игроков */}
-      <div className="bg-white rounded-2xl shadow-2xl p-4">
-        <div className="flex gap-3">
-          {/* Таймер черных */}
-          <div className={`p-3 rounded-lg border-2 flex-1 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
-            <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">Черные</div>
-              <div className={`text-lg font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
-                {formatTime(timers.black)}
-              </div>
-            </div>
-          </div>
-          
-          {/* Таймер белых */}
-          <div className={`p-3 rounded-lg border-2 flex-1 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
-            <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">Белые</div>
-              <div className={`text-lg font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
-                {formatTime(timers.white)}
-              </div>
-            </div>
+      {/* Таймер черных (сверху) */}
+      <div className={`bg-white rounded-2xl shadow-2xl p-4 border-2 ${currentPlayer === 'black' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+        <div className="text-center">
+          <div className="text-sm text-gray-600 mb-1">Черные</div>
+          <div className={`text-xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
+            {formatTime(timers.black)}
           </div>
         </div>
       </div>
@@ -1293,6 +1278,16 @@ const InteractiveChessBoard = () => {
             })}
           </div>
         )}
+      </div>
+    </div>
+    
+    {/* Таймер белых (снизу) */}
+    <div className={`bg-white rounded-2xl shadow-2xl p-4 border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+      <div className="text-center">
+        <div className="text-sm text-gray-600 mb-1">Белые</div>
+        <div className={`text-xl font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
+          {formatTime(timers.white)}
+        </div>
       </div>
     </div>
     
