@@ -284,7 +284,22 @@ const Index = () => {
               </div>
             </div>
             <div className="relative">
-              <InteractiveChessBoard />
+              <div className="bg-gradient-to-br from-primary/10 to-gold-100/30 rounded-2xl p-8 text-center">
+                <div className="text-8xl mb-4">♟️</div>
+                <h3 className="text-2xl font-heading font-bold text-gray-900 mb-2">
+                  Готовы играть?
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Перейдите во вкладку "Игра" для тренировки
+                </p>
+                <Button 
+                  onClick={() => setActiveSection('play')}
+                  className="bg-primary hover:bg-gold-600 text-black"
+                >
+                  <Icon name="Gamepad2" size={20} className="mr-2" />
+                  Играть в шахматы
+                </Button>
+              </div>
             </div>
           </div>
         </div>
