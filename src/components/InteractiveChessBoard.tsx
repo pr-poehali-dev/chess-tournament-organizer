@@ -5,6 +5,7 @@ import GameModeSelector from './chess/GameModeSelector';
 import PlayerTimers from './chess/PlayerTimers';
 import MoveHistory from './chess/MoveHistory';
 import Icon from '@/components/ui/icon';
+import { ChessPiece, Position, GameMove } from './chess/types';
 
 const InteractiveChessBoard = () => {
   const {
@@ -51,6 +52,286 @@ const InteractiveChessBoard = () => {
     initializeBoard
   } = useChessGame();
 
+  // Игровая логика
+  const findKing = (board: (ChessPiece | null)[][], color: 'white' | 'black'): Position | null => {
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece && piece.type === 'king' && piece.color === color) {
+          return { row, col };
+        }
+      }
+    }
+    return null;
+  };
+
+  const isSquareAttacked = (board: (ChessPiece | null)[][], targetRow: number, targetCol: number, byColor: 'white' | 'black'): boolean => {
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece && piece.color === byColor) {
+          const moves = getPieceAttackMoves(board, row, col, piece);
+          if (moves.some(move => move.row === targetRow && move.col === targetCol)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  const getPieceAttackMoves = (board: (ChessPiece | null)[][], row: number, col: number, piece: ChessPiece): Position[] => {
+    const moves: Position[] = [];
+
+    switch (piece.type) {
+      case 'pawn':
+        const direction = piece.color === 'white' ? -1 : 1;
+        for (const colOffset of [-1, 1]) {
+          const newRow = row + direction;
+          const newCol = col + colOffset;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            moves.push({ row: newRow, col: newCol });
+          }
+        }
+        break;
+
+      case 'rook':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            moves.push({ row: newRow, col: newCol });
+            if (board[newRow][newCol]) break;
+          }
+        }
+        break;
+
+      case 'knight':
+        const knightMoves = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
+        for (const [dr, dc] of knightMoves) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            moves.push({ row: newRow, col: newCol });
+          }
+        }
+        break;
+
+      case 'bishop':
+        for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            moves.push({ row: newRow, col: newCol });
+            if (board[newRow][newCol]) break;
+          }
+        }
+        break;
+
+      case 'queen':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            moves.push({ row: newRow, col: newCol });
+            if (board[newRow][newCol]) break;
+          }
+        }
+        break;
+
+      case 'king':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            moves.push({ row: newRow, col: newCol });
+          }
+        }
+        break;
+    }
+
+    return moves;
+  };
+
+  const isKingInCheck = (board: (ChessPiece | null)[][], color: 'white' | 'black'): boolean => {
+    const kingPos = findKing(board, color);
+    if (!kingPos) return false;
+
+    const enemyColor = color === 'white' ? 'black' : 'white';
+    return isSquareAttacked(board, kingPos.row, kingPos.col, enemyColor);
+  };
+
+  const isMoveLegal = (board: (ChessPiece | null)[][], fromRow: number, fromCol: number, toRow: number, toCol: number): boolean => {
+    const testBoard = board.map(row => [...row]);
+    const piece = testBoard[fromRow][fromCol];
+    if (!piece) return false;
+
+    testBoard[fromRow][fromCol] = null;
+    testBoard[toRow][toCol] = piece;
+
+    return !isKingInCheck(testBoard, piece.color);
+  };
+
+  const getRawMoves = (board: (ChessPiece | null)[][], row: number, col: number): Position[] => {
+    const piece = board[row][col];
+    if (!piece) return [];
+
+    const moves: Position[] = [];
+
+    switch (piece.type) {
+      case 'pawn':
+        const direction = piece.color === 'white' ? -1 : 1;
+        const startRow = piece.color === 'white' ? 6 : 1;
+
+        if (row + direction >= 0 && row + direction < 8 && !board[row + direction][col]) {
+          moves.push({ row: row + direction, col });
+          
+          if (row === startRow && !board[row + 2 * direction][col]) {
+            moves.push({ row: row + 2 * direction, col });
+          }
+        }
+
+        for (const colOffset of [-1, 1]) {
+          const newRow = row + direction;
+          const newCol = col + colOffset;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (targetPiece && targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+        
+      case 'rook':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'knight':
+        const knightMoves = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
+        for (const [dr, dc] of knightMoves) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+
+      case 'bishop':
+        for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'queen':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          for (let i = 1; i < 8; i++) {
+            const newRow = row + dr * i;
+            const newCol = col + dc * i;
+            if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) break;
+            
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece) {
+              moves.push({ row: newRow, col: newCol });
+            } else {
+              if (targetPiece.color !== piece.color) {
+                moves.push({ row: newRow, col: newCol });
+              }
+              break;
+            }
+          }
+        }
+        break;
+
+      case 'king':
+        for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+          const newRow = row + dr;
+          const newCol = col + dc;
+          if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+            const targetPiece = board[newRow][newCol];
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        break;
+    }
+
+    return moves;
+  };
+
+  const getPossibleMoves = (board: (ChessPiece | null)[][], row: number, col: number): Position[] => {
+    const rawMoves = getRawMoves(board, row, col);
+    return rawMoves.filter(move => isMoveLegal(board, row, col, move.row, move.col));
+  };
+
+  const createMoveNotation = (piece: ChessPiece, from: Position, to: Position, capturedPiece: ChessPiece | null): string => {
+    const files = 'abcdefgh';
+    let notation = '';
+    
+    if (piece.type !== 'pawn') {
+      const pieceSymbols = {
+        king: 'K', queen: 'Q', rook: 'R', 
+        bishop: 'B', knight: 'N'
+      };
+      notation += pieceSymbols[piece.type as keyof typeof pieceSymbols];
+    }
+    
+    if (capturedPiece) {
+      if (piece.type === 'pawn') {
+        notation += files[from.col];
+      }
+      notation += 'x';
+    }
+    
+    notation += files[to.col] + (8 - to.row);
+    
+    return notation;
+  };
+
   // Эффект для автоматического запуска таймера после выбора режима игры
   useEffect(() => {
     if (gameStarted && gameHistory.moves.length === 0) {
@@ -83,54 +364,75 @@ const InteractiveChessBoard = () => {
     return () => clearInterval(interval);
   }, [timerActive, currentPlayer, gameStatus]);
 
-  // Простые игровые функции (сокращенные версии)
-  const handleSquareClick = async (row: number, col: number) => {
+  const handleSquareClick = (row: number, col: number) => {
     if (isAiThinking || (gameMode === 'human-vs-ai' && currentPlayer === 'black')) return;
     if (gameStatus === 'checkmate' || gameStatus === 'stalemate') return;
 
     const piece = board[row][col];
 
     if (selectedSquare && possibleMoves.some(move => move.row === row && move.col === col)) {
-      // Выполняем ход (упрощенная версия)
       const movingPiece = board[selectedSquare.row][selectedSquare.col];
       if (movingPiece) {
+        const capturedPiece = board[row][col];
         const newBoard = board.map(r => [...r]);
         newBoard[selectedSquare.row][selectedSquare.col] = null;
         newBoard[row][col] = movingPiece;
         
-        setBoard(newBoard);
-        setSelectedSquare(null);
-        setPossibleMoves([]);
-        setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+        // Проверяем превращение пешки
+        if (movingPiece.type === 'pawn' && 
+            ((movingPiece.color === 'white' && row === 0) || 
+             (movingPiece.color === 'black' && row === 7))) {
+          setBoard(newBoard);
+          setPawnPromotion({
+            position: { row, col },
+            color: movingPiece.color
+          });
+          setSelectedSquare(null);
+          setPossibleMoves([]);
+          return;
+        }
         
-        // Добавляем в историю (упрощенно)
-        const newMove = {
+        const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
+        const notation = createMoveNotation(movingPiece, selectedSquare, { row, col }, capturedPiece);
+        
+        const gameMove: GameMove = {
           from: selectedSquare,
           to: { row, col },
           piece: movingPiece,
-          capturedPiece: board[row][col],
-          notation: `${movingPiece.symbol}${String.fromCharCode(97 + col)}${8 - row}`,
+          capturedPiece,
+          notation,
           boardAfterMove: newBoard.map(r => [...r])
         };
         
+        setBoard(newBoard);
+        setSelectedSquare(null);
+        setPossibleMoves([]);
+        setCurrentPlayer(nextPlayer);
         setGameHistory(prev => ({
-          moves: [...prev.moves.slice(0, prev.currentMoveIndex + 1), newMove],
+          moves: [...prev.moves.slice(0, prev.currentMoveIndex + 1), gameMove],
           currentMoveIndex: prev.currentMoveIndex + 1
         }));
-      }
-    } else if (piece && piece.color === currentPlayer) {
-      // Простая генерация ходов
-      const moves = [];
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          if (!board[r][c] || board[r][c]?.color !== currentPlayer) {
-            moves.push({ row: r, col: c });
-          }
+        
+        if (nextPlayer === 'black') {
+          setMoveNumber(prev => prev + 1);
+        }
+        
+        // Проверяем шах/мат
+        const isCheck = isKingInCheck(newBoard, nextPlayer);
+        setIsInCheck(prev => ({
+          ...prev,
+          [nextPlayer]: isCheck
+        }));
+        
+        if (isCheck) {
+          setGameStatus('check');
+        } else {
+          setGameStatus('playing');
         }
       }
-      
+    } else if (piece && piece.color === currentPlayer) {
       setSelectedSquare({ row, col });
-      setPossibleMoves(moves.slice(0, 8)); // Ограничиваем для простоты
+      setPossibleMoves(getPossibleMoves(board, row, col));
     } else {
       setSelectedSquare(null);
       setPossibleMoves([]);
@@ -304,24 +606,35 @@ const InteractiveChessBoard = () => {
         {/* Правая панель с таймерами и историей */}
         <div className="w-full lg:w-80 flex flex-col" style={{height: '640px'}}>
           
-          <PlayerTimers
-            timers={timers}
-            currentPlayer={currentPlayer}
-            gameMode={gameMode}
-            isAiThinking={isAiThinking}
-          />
+          {/* Таймер черных (сверху) */}
+          <div className={`bg-white rounded-2xl shadow-2xl p-4 mb-4 border-2 ${currentPlayer === 'black' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+            <div className="text-center">
+              <div className="text-sm text-gray-600 mb-1">
+                {gameMode === 'human-vs-ai' ? '🤖 Компьютер' : 'Черные'}
+                {gameMode === 'human-vs-ai' && isAiThinking && (
+                  <span className="ml-2 text-blue-600 animate-pulse">думает...</span>
+                )}
+              </div>
+              <div className={`text-xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
+                {Math.floor(timers.black / 60)}:{(timers.black % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+          </div>
           
           <MoveHistory
             gameHistory={gameHistory}
             onGoToMove={goToMove}
           />
           
-          <PlayerTimers
-            timers={timers}
-            currentPlayer={currentPlayer}
-            gameMode={gameMode}
-            isAiThinking={isAiThinking}
-          />
+          {/* Таймер белых (снизу) */}
+          <div className={`bg-white rounded-2xl shadow-2xl p-4 border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+            <div className="text-center">
+              <div className="text-sm text-gray-600 mb-1">Белые</div>
+              <div className={`text-xl font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
+                {Math.floor(timers.white / 60)}:{(timers.white % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
