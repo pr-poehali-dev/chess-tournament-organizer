@@ -1218,28 +1218,28 @@ const InteractiveChessBoard = () => {
       <div className="bg-white rounded-2xl shadow-2xl p-6">
         
         {/* Таймер черных */}
-        <div className={`p-4 rounded-lg border-2 mb-4 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+        <div className={`p-2 rounded-lg border-2 mb-3 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
           <div className="text-center">
-            <div className="text-sm text-gray-600 mb-1">Черные</div>
-            <div className={`text-2xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
+            <div className="text-xs text-gray-600 mb-1">Черные</div>
+            <div className={`text-lg font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
               {formatTime(timers.black)}
             </div>
           </div>
         </div>
         
         {/* Информация о ходе */}
-        <div className="text-center py-2 border-y border-gray-200 mb-4">
-          <div className="text-lg font-semibold">Ход {moveNumber}</div>
-          <div className="text-sm text-gray-600">
+        <div className="text-center py-1 border-y border-gray-200 mb-3">
+          <div className="text-sm font-semibold">Ход {moveNumber}</div>
+          <div className="text-xs text-gray-600">
             {gameHistory.moves.length} ходов сделано
           </div>
         </div>
         
         {/* Таймер белых */}
-        <div className={`p-4 rounded-lg border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+        <div className={`p-2 rounded-lg border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
           <div className="text-center">
-            <div className="text-sm text-gray-600 mb-1">Белые</div>
-            <div className={`text-2xl font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
+            <div className="text-xs text-gray-600 mb-1">Белые</div>
+            <div className={`text-lg font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
               {formatTime(timers.white)}
             </div>
           </div>
@@ -1247,7 +1247,7 @@ const InteractiveChessBoard = () => {
       </div>
       
       {/* Панель истории ходов */}
-      <div className="bg-white rounded-2xl shadow-2xl p-6 flex-1 min-h-0">
+      <div className="bg-white rounded-2xl shadow-2xl p-4 flex-1 min-h-0">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-heading font-bold">История партии</h3>
         <div className="flex items-center gap-2">
@@ -1302,34 +1302,45 @@ const InteractiveChessBoard = () => {
               <span className="text-sm text-gray-600">Начальная позиция</span>
             </button>
 
-            {/* Список ходов */}
-            {gameHistory.moves.map((move, index) => {
-              const moveNum = Math.floor(index / 2) + 1;
-              const isWhiteMove = index % 2 === 0;
-              const isCurrentMove = index === gameHistory.currentMoveIndex;
+            {/* Список ходов по парам */}
+            {Array.from({ length: Math.ceil(gameHistory.moves.length / 2) }, (_, pairIndex) => {
+              const moveNum = pairIndex + 1;
+              const whiteMove = gameHistory.moves[pairIndex * 2];
+              const blackMove = gameHistory.moves[pairIndex * 2 + 1];
               
               return (
-                <button
-                  key={index}
-                  onClick={() => goToMove(index)}
-                  className={`w-full text-left p-2 rounded-lg transition-colors ${
-                    isCurrentMove 
-                      ? 'bg-primary text-black font-semibold' 
-                      : 'hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span>
-                      {isWhiteMove && `${moveNum}. `}
-                      {!isWhiteMove && moveNum === 1 && '1... '}
-                      {!isWhiteMove && moveNum > 1 && ''}
-                      {move.notation}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {positionToNotation(move.from)}-{positionToNotation(move.to)}
-                    </span>
-                  </div>
-                </button>
+                <div key={pairIndex} className="flex items-center gap-1 mb-1">
+                  <span className="text-xs text-gray-500 w-6 text-right">{moveNum}.</span>
+                  
+                  {/* Ход белых */}
+                  <button
+                    onClick={() => goToMove(pairIndex * 2)}
+                    className={`px-2 py-1 rounded text-sm transition-colors flex-1 text-left ${
+                      gameHistory.currentMoveIndex === pairIndex * 2
+                        ? 'bg-primary text-black font-semibold' 
+                        : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    {whiteMove?.notation || ''}
+                  </button>
+                  
+                  {/* Ход черных */}
+                  {blackMove && (
+                    <button
+                      onClick={() => goToMove(pairIndex * 2 + 1)}
+                      className={`px-2 py-1 rounded text-sm transition-colors flex-1 text-left ${
+                        gameHistory.currentMoveIndex === pairIndex * 2 + 1
+                          ? 'bg-primary text-black font-semibold' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      {blackMove.notation}
+                    </button>
+                  )}
+                  
+                  {/* Пустое место если хода черных еще нет */}
+                  {!blackMove && <div className="flex-1"></div>}
+                </div>
               );
             })}
           </div>
