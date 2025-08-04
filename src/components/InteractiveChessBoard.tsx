@@ -72,6 +72,7 @@ const InteractiveChessBoard = () => {
   const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], currentHistory: GameMove[]): { isRepetition: boolean; moveNumber?: number; totalMoves?: number } => {
     // Слишком мало ходов для повторения
     if (currentHistory.length < 4) {
+      console.log('Слишком мало ходов:', currentHistory.length);
       return { isRepetition: false };
     }
 
@@ -91,11 +92,15 @@ const InteractiveChessBoard = () => {
       if (boardToString(currentHistory[i].boardAfterMove) === currentPosition) {
         repetitionCount++;
         matchingMoves.push(i + 1); // +1 для человеческого счёта ходов
+        console.log(`Найдено совпадение на ходу ${i + 1}, всего: ${repetitionCount}`);
       }
     }
 
+    console.log(`Финальный счёт повторений: ${repetitionCount}, нужно: 2`);
+
     // Возвращаем подробную информацию если позиция встречалась 2 или более раз (+ текущая = 3)
     if (repetitionCount >= 2) {
+      console.log('ТРЁХКРАТНОЕ ПОВТОРЕНИЕ ОБНАРУЖЕНО!');
       return { 
         isRepetition: true, 
         moveNumber: Math.ceil((currentHistory.length + 1) / 2),
@@ -480,7 +485,9 @@ const InteractiveChessBoard = () => {
         
         // Проверяем трёхкратное повторение позиции
         const repetitionCheck = checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1)]);
+        console.log('ИИ: Проверка повторения:', repetitionCheck, 'История:', gameHistory.moves.length);
         if (repetitionCheck.isRepetition) {
+          console.log('ИИ: НИЧЬЯ НАЙДЕНА!');
           setGameStatus('draw');
           setShowEndGameModal(true);
           setIsAiThinking(false);
@@ -710,7 +717,9 @@ const InteractiveChessBoard = () => {
         
         // Проверяем трёхкратное повторение позиции
         const repetitionCheck = checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1)]);
+        console.log('Проверка повторения:', repetitionCheck, 'История:', gameHistory.moves.length);
         if (repetitionCheck.isRepetition) {
+          console.log('НИЧЬЯ НАЙДЕНА!');
           setGameStatus('draw');
           setShowEndGameModal(true);
           return;
