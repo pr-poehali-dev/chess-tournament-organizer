@@ -1167,10 +1167,10 @@ const InteractiveChessBoard = () => {
     </div>
 
     {/* Правая панель с таймерами и историей */}
-    <div className="w-full lg:w-80 flex flex-col gap-4">
+    <div className="w-full lg:w-80 flex flex-col" style={{height: '640px'}}>
       
       {/* Таймер черных (сверху) */}
-      <div className={`bg-white rounded-2xl shadow-2xl p-4 border-2 ${currentPlayer === 'black' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
+      <div className={`bg-white rounded-2xl shadow-2xl p-4 border-2 mb-4 ${currentPlayer === 'black' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
         <div className="text-center">
           <div className="text-sm text-gray-600 mb-1">Черные</div>
           <div className={`text-xl font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
@@ -1180,7 +1180,7 @@ const InteractiveChessBoard = () => {
       </div>
       
       {/* Панель истории ходов */}
-      <div className="bg-white rounded-2xl shadow-2xl p-4 flex-1 min-h-0">
+      <div className="bg-white rounded-2xl shadow-2xl p-4 flex-1 mb-4 overflow-hidden flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-heading font-bold">История партии</h3>
         <div className="flex items-center gap-2">
@@ -1215,7 +1215,7 @@ const InteractiveChessBoard = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{maxHeight: 'calc(100vh - 500px)'}}>
+      <div className="flex-1 overflow-y-auto">
         {gameHistory.moves.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
             <Icon name="Clock" size={48} className="mx-auto mb-2 opacity-50" />
