@@ -1158,51 +1158,7 @@ const InteractiveChessBoard = () => {
         </div>
       </div>
 
-      {/* Информация о игре */}
-      <div className="text-center">
-        <h3 className="text-2xl font-heading font-bold mb-2">Интерактивные шахматы</h3>
-        
-        {/* Статус игры */}
-        {gameStatus === 'check' && (
-          <div className="mb-3 p-3 bg-red-100 border border-red-300 rounded-lg">
-            <p className="text-red-700 font-semibold">
-              ⚠️ ШАХ! Король {currentPlayer === 'white' ? 'белых' : 'черных'} под угрозой!
-            </p>
-          </div>
-        )}
-        
-        {gameStatus === 'checkmate' && (
-          <div className="mb-3 p-3 bg-red-200 border border-red-400 rounded-lg">
-            <p className="text-red-800 font-bold text-lg">
-              🏁 МАТ! {currentPlayer === 'white' ? 'Черные' : 'Белые'} победили!
-            </p>
-          </div>
-        )}
-        
-        {gameStatus === 'stalemate' && (
-          <div className="mb-3 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
-            <p className="text-yellow-800 font-bold text-lg">
-              🤝 ПАТ! Ничья!
-            </p>
-          </div>
-        )}
-        
-        {(gameStatus === 'checkmate' || gameStatus === 'stalemate') ? null : (
-          <p className="text-lg font-body">
-            Ход: <span className={`font-semibold ${gameStatus === 'check' ? 'text-red-600' : 'text-primary'}`}>
-              {currentPlayer === 'white' ? 'Белых' : 'Черных'}
-            </span>
-          </p>
-        )}
-        
-        <button
-          onClick={resetGame}
-          className="mt-2 px-4 py-2 bg-primary hover:bg-gold-600 text-black rounded-lg font-medium transition-colors"
-        >
-          Новая игра
-        </button>
 
-      </div>
 
       {/* Инструкция */}
       <div className="text-center text-sm text-gray-600 max-w-md">
