@@ -1130,7 +1130,7 @@ const InteractiveChessBoard = () => {
             const isLight = isLightSquare(row, col);
             const isSelected = isSquareSelected(row, col);
             const isPossible = isPossibleMove(row, col);
-            const isKingInCheckSquare = piece && piece.type === 'king' && 
+            const isKingInCheckSquare = piece && piece.type === 'king' && showEndGameModal &&
               ((piece.color === 'white' && isInCheck.white) || (piece.color === 'black' && isInCheck.black));
 
             return (
