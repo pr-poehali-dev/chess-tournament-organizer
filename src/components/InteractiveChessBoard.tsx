@@ -1170,32 +1170,25 @@ const InteractiveChessBoard = () => {
     <div className="w-full lg:w-80 flex flex-col gap-6">
       
       {/* Таймеры игроков */}
-      <div className="bg-white rounded-2xl shadow-2xl p-6">
-        
-        {/* Таймер черных */}
-        <div className={`p-2 rounded-lg border-2 mb-3 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
-          <div className="text-center">
-            <div className="text-xs text-gray-600 mb-1">Черные</div>
-            <div className={`text-lg font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
-              {formatTime(timers.black)}
+      <div className="bg-white rounded-2xl shadow-2xl p-4">
+        <div className="flex gap-3">
+          {/* Таймер черных */}
+          <div className={`p-3 rounded-lg border-2 flex-1 ${currentPlayer === 'black' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+            <div className="text-center">
+              <div className="text-sm text-gray-600 mb-1">Черные</div>
+              <div className={`text-lg font-mono font-bold ${timers.black < 60 ? 'text-red-600' : 'text-black'}`}>
+                {formatTime(timers.black)}
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Информация о ходе */}
-        <div className="text-center py-1 border-y border-gray-200 mb-3">
-          <div className="text-sm font-semibold">Ход {moveNumber}</div>
-          <div className="text-xs text-gray-600">
-            {gameHistory.moves.length} ходов сделано
-          </div>
-        </div>
-        
-        {/* Таймер белых */}
-        <div className={`p-2 rounded-lg border-2 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
-          <div className="text-center">
-            <div className="text-xs text-gray-600 mb-1">Белые</div>
-            <div className={`text-lg font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
-              {formatTime(timers.white)}
+          
+          {/* Таймер белых */}
+          <div className={`p-3 rounded-lg border-2 flex-1 ${currentPlayer === 'white' ? 'border-primary bg-primary/10' : 'border-gray-300'}`}>
+            <div className="text-center">
+              <div className="text-sm text-gray-600 mb-1">Белые</div>
+              <div className={`text-lg font-mono font-bold ${timers.white < 60 ? 'text-red-600' : 'text-black'}`}>
+                {formatTime(timers.white)}
+              </div>
             </div>
           </div>
         </div>
