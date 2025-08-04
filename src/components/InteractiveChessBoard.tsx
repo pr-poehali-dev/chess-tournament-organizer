@@ -337,7 +337,7 @@ const InteractiveChessBoard = () => {
     setIsAiThinking(true);
     
     setTimeout(() => {
-      const allMoves: { from: Position; to: Position; piece: ChessPiece }[] = [];
+      const allMoves: { from: Position; to: Position; piece: ChessPiece; score: number }[] = [];
       
       // Собираем все возможные ходы для черных
       for (let row = 0; row < 8; row++) {
@@ -346,40 +346,78 @@ const InteractiveChessBoard = () => {
           if (piece && piece.color === 'black') {
             const moves = getPossibleMoves(board, row, col);
             moves.forEach(move => {
-              allMoves.push({
-                from: { row, col },
-                to: move,
-                piece
-              });
+              // Проверяем что ход действительно легален
+              if (isMoveLegal(board, row, col, move.row, move.col)) {
+                // Создаем тестовую доску для оценки хода
+                const testBoard = board.map(r => [...r]);
+                testBoard[row][col] = null;
+                testBoard[move.row][move.col] = piece;
+                
+                let score = 0;
+                
+                // Высший приоритет: защита от шаха
+                const isCurrentlyInCheck = isKingInCheck(board, 'black');
+                const willBeInCheck = isKingInCheck(testBoard, 'black');
+                
+                if (isCurrentlyInCheck && !willBeInCheck) {
+                  score += 1000; // Очень высокий приоритет для защиты от шаха
+                } else if (isCurrentlyInCheck && willBeInCheck) {
+                  score -= 1000; // Избегаем ходов, которые не спасают от шаха
+                }
+                
+                // Бонус за взятие фигур
+                const capturedPiece = board[move.row][move.col];
+                if (capturedPiece) {
+                  const pieceValues = {
+                    pawn: 1, knight: 3, bishop: 3, 
+                    rook: 5, queen: 9, king: 0
+                  };
+                  score += pieceValues[capturedPiece.type] * 10;
+                }
+                
+                // Небольшой случайный фактор для разнообразия
+                score += Math.random() * 2;
+                
+                allMoves.push({
+                  from: { row, col },
+                  to: move,
+                  piece,
+                  score
+                });
+              }
             });
           }
         }
       }
       
       if (allMoves.length > 0) {
-        // Простая ИИ логика - случайный ход
-        const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+        // Сортируем ходы по оценке (лучшие первыми)
+        allMoves.sort((a, b) => b.score - a.score);
         
-        const capturedPiece = board[randomMove.to.row][randomMove.to.col];
+        // Выбираем один из 3 лучших ходов для разнообразия
+        const topMoves = allMoves.slice(0, Math.min(3, allMoves.length));
+        const selectedMove = topMoves[Math.floor(Math.random() * topMoves.length)];
+        
+        const capturedPiece = board[selectedMove.to.row][selectedMove.to.col];
         const newBoard = board.map(r => [...r]);
-        newBoard[randomMove.from.row][randomMove.from.col] = null;
-        newBoard[randomMove.to.row][randomMove.to.col] = randomMove.piece;
+        newBoard[selectedMove.from.row][selectedMove.from.col] = null;
+        newBoard[selectedMove.to.row][selectedMove.to.col] = selectedMove.piece;
         
         // Проверяем превращение пешки
-        if (randomMove.piece.type === 'pawn' && randomMove.to.row === 7) {
-          newBoard[randomMove.to.row][randomMove.to.col] = {
+        if (selectedMove.piece.type === 'pawn' && selectedMove.to.row === 7) {
+          newBoard[selectedMove.to.row][selectedMove.to.col] = {
             type: 'queen',
             color: 'black',
             symbol: '♛'
           };
         }
         
-        const notation = createMoveNotation(randomMove.piece, randomMove.from, randomMove.to, capturedPiece);
+        const notation = createMoveNotation(selectedMove.piece, selectedMove.from, selectedMove.to, capturedPiece);
         
         const gameMove: GameMove = {
-          from: randomMove.from,
-          to: randomMove.to,
-          piece: randomMove.piece,
+          from: selectedMove.from,
+          to: selectedMove.to,
+          piece: selectedMove.piece,
           capturedPiece,
           notation,
           boardAfterMove: newBoard.map(r => [...r])
