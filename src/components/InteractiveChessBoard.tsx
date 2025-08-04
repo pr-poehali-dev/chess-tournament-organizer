@@ -136,6 +136,7 @@ const InteractiveChessBoard = () => {
   const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
   const [isInCheck, setIsInCheck] = useState<{ white: boolean; black: boolean }>({ white: false, black: false });
   const [gameStatus, setGameStatus] = useState<'playing' | 'check' | 'checkmate' | 'stalemate'>('playing');
+  const [showEndGameModal, setShowEndGameModal] = useState(true);
 
   // Эффект для работы таймеров
   useEffect(() => {
@@ -1008,6 +1009,7 @@ const InteractiveChessBoard = () => {
     setTimerActive(false);
     setGameHistory({ moves: [], currentMoveIndex: -1 });
     setMoveNumber(1);
+    setShowEndGameModal(true);
   };
 
   return (
@@ -1015,7 +1017,7 @@ const InteractiveChessBoard = () => {
       {/* Основная игровая область */}
       <div className="flex flex-col items-center space-y-6">
         {/* Всплывающее окно с результатом игры */}
-      {(gameStatus === 'checkmate' || gameStatus === 'stalemate') && (
+      {(gameStatus === 'checkmate' || gameStatus === 'stalemate') && showEndGameModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center border-4 border-primary">
             <div className="mb-6">
@@ -1042,6 +1044,12 @@ const InteractiveChessBoard = () => {
             </div>
             
             <div className="space-y-3">
+              <button
+                onClick={() => setShowEndGameModal(false)}
+                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg transition-colors"
+              >
+                🔍 Анализировать партию
+              </button>
               <button
                 onClick={resetGame}
                 className="w-full px-6 py-3 bg-primary hover:bg-gold-600 text-black rounded-lg font-bold text-lg transition-colors"
