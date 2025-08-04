@@ -512,6 +512,14 @@ const InteractiveChessBoard = () => {
   const handleSquareClick = (row: number, col: number) => {
     if (isAiThinking || (gameMode === 'human-vs-ai' && currentPlayer === 'black')) return;
     if (gameStatus === 'checkmate' || gameStatus === 'stalemate') return;
+    
+    // Проверяем, находимся ли мы на последнем ходе в истории
+    const isAtLatestMove = gameHistory.moves.length === 0 || 
+                          gameHistory.currentMoveIndex === gameHistory.moves.length - 1;
+    if (!isAtLatestMove) {
+      // Если мы просматриваем историю, не позволяем делать ходы
+      return;
+    }
 
     const piece = board[row][col];
 
@@ -879,10 +887,25 @@ const InteractiveChessBoard = () => {
             onSquareClick={handleSquareClick}
           />
 
+          {/* Индикация просмотра истории */}
+          {gameHistory.moves.length > 0 && gameHistory.currentMoveIndex !== gameHistory.moves.length - 1 && (
+            <div className="text-center bg-blue-100 border border-blue-300 rounded-lg p-3 max-w-md">
+              <div className="flex items-center justify-center gap-2 text-blue-700">
+                <Icon name="Clock" size={16} />
+                <span className="font-semibold">Просмотр истории</span>
+              </div>
+              <p className="text-sm text-blue-600 mt-1">
+                Перейдите к последнему ходу, чтобы продолжить игру
+              </p>
+            </div>
+          )}
+
           {/* Инструкция */}
-          <div className="text-center text-sm text-gray-600 max-w-md">
-            <p>Кликните на фигуру чтобы выбрать её, затем кликните на подсвеченную клетку чтобы сделать ход.</p>
-          </div>
+          {(gameHistory.moves.length === 0 || gameHistory.currentMoveIndex === gameHistory.moves.length - 1) && (
+            <div className="text-center text-sm text-gray-600 max-w-md">
+              <p>Кликните на фигуру чтобы выбрать её, затем кликните на подсвеченную клетку чтобы сделать ход.</p>
+            </div>
+          )}
         </div>
         )}
 

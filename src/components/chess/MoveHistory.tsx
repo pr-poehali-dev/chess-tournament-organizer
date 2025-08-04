@@ -7,6 +7,7 @@ interface MoveHistoryProps {
 }
 
 const MoveHistory = ({ gameHistory, onGoToMove }: MoveHistoryProps) => {
+  const isAtLatestMove = gameHistory.currentMoveIndex === gameHistory.moves.length - 1;
   const positionToNotation = (pos: Position): string => {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -16,7 +17,14 @@ const MoveHistory = ({ gameHistory, onGoToMove }: MoveHistoryProps) => {
   return (
     <div className="bg-white rounded-2xl shadow-2xl p-4 flex-1 mb-4 overflow-hidden flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-heading font-bold">История партии</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-heading font-bold">История партии</h3>
+          {!isAtLatestMove && gameHistory.moves.length > 0 && (
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">
+              Просмотр истории
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => onGoToMove(-1)}
