@@ -491,10 +491,13 @@ const InteractiveChessBoard = () => {
   useEffect(() => {
     if (!timerActive || (gameStatus !== 'playing' && gameStatus !== 'check')) return;
 
+    // Определяем реального текущего игрока (чей ход в актуальной партии)
+    const realCurrentPlayer = gameHistory.moves.length % 2 === 0 ? 'white' : 'black';
+
     const interval = setInterval(() => {
       setTimers(prev => {
         const newTimers = { ...prev };
-        if (currentPlayer === 'white') {
+        if (realCurrentPlayer === 'white') {
           newTimers.white = Math.max(0, prev.white - 1);
           if (newTimers.white === 0) {
             setGameStatus('checkmate');
@@ -510,7 +513,7 @@ const InteractiveChessBoard = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timerActive, currentPlayer, gameStatus]);
+  }, [timerActive, gameStatus, gameHistory.moves.length]);
 
   const handleSquareClick = (row: number, col: number) => {
     if (isAiThinking || (gameMode === 'human-vs-ai' && currentPlayer === 'black')) return;
