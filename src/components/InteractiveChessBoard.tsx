@@ -332,6 +332,92 @@ const InteractiveChessBoard = () => {
     return notation;
   };
 
+  // ИИ логика
+  const makeAiMove = () => {
+    setIsAiThinking(true);
+    
+    setTimeout(() => {
+      const allMoves: { from: Position; to: Position; piece: ChessPiece }[] = [];
+      
+      // Собираем все возможные ходы для черных
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const piece = board[row][col];
+          if (piece && piece.color === 'black') {
+            const moves = getPossibleMoves(board, row, col);
+            moves.forEach(move => {
+              allMoves.push({
+                from: { row, col },
+                to: move,
+                piece
+              });
+            });
+          }
+        }
+      }
+      
+      if (allMoves.length > 0) {
+        // Простая ИИ логика - случайный ход
+        const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+        
+        const capturedPiece = board[randomMove.to.row][randomMove.to.col];
+        const newBoard = board.map(r => [...r]);
+        newBoard[randomMove.from.row][randomMove.from.col] = null;
+        newBoard[randomMove.to.row][randomMove.to.col] = randomMove.piece;
+        
+        // Проверяем превращение пешки
+        if (randomMove.piece.type === 'pawn' && randomMove.to.row === 7) {
+          newBoard[randomMove.to.row][randomMove.to.col] = {
+            type: 'queen',
+            color: 'black',
+            symbol: '♛'
+          };
+        }
+        
+        const notation = createMoveNotation(randomMove.piece, randomMove.from, randomMove.to, capturedPiece);
+        
+        const gameMove: GameMove = {
+          from: randomMove.from,
+          to: randomMove.to,
+          piece: randomMove.piece,
+          capturedPiece,
+          notation,
+          boardAfterMove: newBoard.map(r => [...r])
+        };
+        
+        setBoard(newBoard);
+        setCurrentPlayer('white');
+        setGameHistory(prev => ({
+          moves: [...prev.moves.slice(0, prev.currentMoveIndex + 1), gameMove],
+          currentMoveIndex: prev.currentMoveIndex + 1
+        }));
+        setMoveNumber(prev => prev + 1);
+        
+        // Проверяем шах/мат
+        const isCheck = isKingInCheck(newBoard, 'white');
+        setIsInCheck(prev => ({
+          ...prev,
+          white: isCheck
+        }));
+        
+        if (isCheck) {
+          setGameStatus('check');
+        } else {
+          setGameStatus('playing');
+        }
+      }
+      
+      setIsAiThinking(false);
+    }, 1500); // Задержка для имитации "размышлений"
+  };
+
+  // Эффект для ходов ИИ
+  useEffect(() => {
+    if (gameMode === 'human-vs-ai' && currentPlayer === 'black' && gameStatus === 'playing' && !isAiThinking) {
+      makeAiMove();
+    }
+  }, [currentPlayer, gameMode, gameStatus]);
+
   // Эффект для автоматического запуска таймера после выбора режима игры
   useEffect(() => {
     if (gameStarted && gameHistory.moves.length === 0) {
