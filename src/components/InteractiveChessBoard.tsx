@@ -290,6 +290,7 @@ const InteractiveChessBoard = () => {
         break;
 
       case 'king':
+        // Обычные ходы короля
         for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
           const newRow = row + dr;
           const newCol = col + dc;
@@ -297,6 +298,35 @@ const InteractiveChessBoard = () => {
             const targetPiece = board[newRow][newCol];
             if (!targetPiece || targetPiece.color !== piece.color) {
               moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        
+        // Рокировка
+        if (!isKingInCheck(board, piece.color)) {
+          const kingRow = piece.color === 'white' ? 7 : 0;
+          
+          // Короткая рокировка (король на e1->g1 или e8->g8)
+          if (piece.color === 'white' && castlingRights.whiteKingSide || 
+              piece.color === 'black' && castlingRights.blackKingSide) {
+            if (row === kingRow && col === 4 && // Король на начальной позиции
+                !board[kingRow][5] && !board[kingRow][6] && // Поля f и g свободны
+                board[kingRow][7]?.type === 'rook' && board[kingRow][7]?.color === piece.color && // Ладья на h
+                !isSquareAttacked(board, kingRow, 5, piece.color === 'white' ? 'black' : 'white') && // f не под боем
+                !isSquareAttacked(board, kingRow, 6, piece.color === 'white' ? 'black' : 'white')) { // g не под боем
+              moves.push({ row: kingRow, col: 6 }); // Короткая рокировка
+            }
+          }
+          
+          // Длинная рокировка (король на e1->c1 или e8->c8)
+          if (piece.color === 'white' && castlingRights.whiteQueenSide || 
+              piece.color === 'black' && castlingRights.blackQueenSide) {
+            if (row === kingRow && col === 4 && // Король на начальной позиции
+                !board[kingRow][3] && !board[kingRow][2] && !board[kingRow][1] && // Поля d, c, b свободны
+                board[kingRow][0]?.type === 'rook' && board[kingRow][0]?.color === piece.color && // Ладья на a
+                !isSquareAttacked(board, kingRow, 3, piece.color === 'white' ? 'black' : 'white') && // d не под боем
+                !isSquareAttacked(board, kingRow, 2, piece.color === 'white' ? 'black' : 'white')) { // c не под боем
+              moves.push({ row: kingRow, col: 2 }); // Длинная рокировка
             }
           }
         }
@@ -474,6 +504,52 @@ const InteractiveChessBoard = () => {
         newBoard[selectedSquare.row][selectedSquare.col] = null;
         newBoard[row][col] = movingPiece;
         
+        // Обработка рокировки
+        if (movingPiece.type === 'king' && Math.abs(col - selectedSquare.col) === 2) {
+          const kingRow = movingPiece.color === 'white' ? 7 : 0;
+          
+          if (col === 6) { // Короткая рокировка
+            // Перемещаем ладью с h на f
+            const rook = newBoard[kingRow][7];
+            newBoard[kingRow][7] = null;
+            newBoard[kingRow][5] = rook;
+          } else if (col === 2) { // Длинная рокировка
+            // Перемещаем ладью с a на d
+            const rook = newBoard[kingRow][0];
+            newBoard[kingRow][0] = null;
+            newBoard[kingRow][3] = rook;
+          }
+        }
+        
+        // Обновляем права на рокировку
+        if (movingPiece.type === 'king') {
+          setCastlingRights(prev => ({
+            ...prev,
+            ...(movingPiece.color === 'white' 
+              ? { whiteKingSide: false, whiteQueenSide: false }
+              : { blackKingSide: false, blackQueenSide: false })
+          }));
+        } else if (movingPiece.type === 'rook') {
+          const rookStartRow = movingPiece.color === 'white' ? 7 : 0;
+          if (selectedSquare.row === rookStartRow) {
+            if (selectedSquare.col === 0) { // Длинная ладья
+              setCastlingRights(prev => ({
+                ...prev,
+                ...(movingPiece.color === 'white' 
+                  ? { whiteQueenSide: false }
+                  : { blackQueenSide: false })
+              }));
+            } else if (selectedSquare.col === 7) { // Короткая ладья
+              setCastlingRights(prev => ({
+                ...prev,
+                ...(movingPiece.color === 'white' 
+                  ? { whiteKingSide: false }
+                  : { blackKingSide: false })
+              }));
+            }
+          }
+        }
+        
         // Проверяем превращение пешки
         if (movingPiece.type === 'pawn' && 
             ((movingPiece.color === 'white' && row === 0) || 
@@ -489,7 +565,14 @@ const InteractiveChessBoard = () => {
         }
         
         const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
-        const notation = createMoveNotation(movingPiece, selectedSquare, { row, col }, capturedPiece);
+        
+        // Специальная нотация для рокировки
+        let notation: string;
+        if (movingPiece.type === 'king' && Math.abs(col - selectedSquare.col) === 2) {
+          notation = col === 6 ? 'O-O' : 'O-O-O'; // Короткая или длинная рокировка
+        } else {
+          notation = createMoveNotation(movingPiece, selectedSquare, { row, col }, capturedPiece);
+        }
         
         const gameMove: GameMove = {
           from: selectedSquare,

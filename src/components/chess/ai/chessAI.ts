@@ -350,6 +350,7 @@ export class ChessAI {
         break;
 
       case 'king':
+        // Обычные ходы короля
         for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
           const newRow = row + dr;
           const newCol = col + dc;
@@ -358,6 +359,25 @@ export class ChessAI {
             if (!targetPiece || targetPiece.color !== piece.color) {
               moves.push({ row: newRow, col: newCol });
             }
+          }
+        }
+        
+        // Рокировка (упрощенная проверка для ИИ)
+        if (!this.isKingInCheck(board, piece.color)) {
+          const kingRow = piece.color === 'white' ? 7 : 0;
+          
+          // Короткая рокировка
+          if (row === kingRow && col === 4 && 
+              !board[kingRow][5] && !board[kingRow][6] && 
+              board[kingRow][7]?.type === 'rook' && board[kingRow][7]?.color === piece.color) {
+            moves.push({ row: kingRow, col: 6 });
+          }
+          
+          // Длинная рокировка
+          if (row === kingRow && col === 4 && 
+              !board[kingRow][3] && !board[kingRow][2] && !board[kingRow][1] && 
+              board[kingRow][0]?.type === 'rook' && board[kingRow][0]?.color === piece.color) {
+            moves.push({ row: kingRow, col: 2 });
           }
         }
         break;
