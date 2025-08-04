@@ -69,7 +69,7 @@ const InteractiveChessBoard = () => {
   };
 
   // Функция для проверки трёхкратного повторения позиции
-  const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], history: GameMove[]): boolean => {
+  const checkThreefoldRepetition = (newBoard: (ChessPiece | null)[][], currentHistory: GameMove[]): boolean => {
     // Преобразуем доску в строку для сравнения
     const boardToString = (board: (ChessPiece | null)[][]): string => {
       return board.map(row => 
@@ -80,11 +80,18 @@ const InteractiveChessBoard = () => {
     const currentPosition = boardToString(newBoard);
     let repetitionCount = 1; // Текущая позиция уже считается
 
-    // Проверяем все предыдущие позиции
-    for (const move of history) {
+    // Проверяем начальную позицию (если вернулись к ней)
+    const initialPosition = boardToString(initializeBoard());
+    if (currentPosition === initialPosition && currentHistory.length >= 4) {
+      repetitionCount++;
+    }
+
+    // Проверяем все предыдущие позиции в истории
+    for (const move of currentHistory) {
       if (boardToString(move.boardAfterMove) === currentPosition) {
         repetitionCount++;
         if (repetitionCount >= 3) {
+          console.log('Трёхкратное повторение обнаружено!', { currentPosition, repetitionCount });
           return true;
         }
       }
@@ -466,7 +473,9 @@ const InteractiveChessBoard = () => {
         setMoveNumber(prev => prev + 1);
         
         // Проверяем трёхкратное повторение позиции
+        console.log('ИИ: Проверяем трёхкратное повторение...');
         if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1), gameMove])) {
+          console.log('ИИ: НИЧЬЯ: Трёхкратное повторение!');
           setGameStatus('draw');
           setShowEndGameModal(true);
           setIsAiThinking(false);
@@ -550,7 +559,7 @@ const InteractiveChessBoard = () => {
 
   const handleSquareClick = (row: number, col: number) => {
     if (isAiThinking || (gameMode === 'human-vs-ai' && currentPlayer === 'black')) return;
-    if (gameStatus === 'checkmate' || gameStatus === 'stalemate') return;
+    if (gameStatus === 'checkmate' || gameStatus === 'stalemate' || gameStatus === 'draw') return;
     
     // Проверяем, находимся ли мы на последнем ходе в истории
     const isAtLatestMove = gameHistory.moves.length === 0 || 
@@ -695,7 +704,9 @@ const InteractiveChessBoard = () => {
         }));
         
         // Проверяем трёхкратное повторение позиции
+        console.log('Проверяем трёхкратное повторение...');
         if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1), gameMove])) {
+          console.log('НИЧЬЯ: Трёхкратное повторение!');
           setGameStatus('draw');
           setShowEndGameModal(true);
           return;
