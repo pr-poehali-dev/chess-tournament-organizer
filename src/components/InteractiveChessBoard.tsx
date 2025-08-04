@@ -389,14 +389,25 @@ const InteractiveChessBoard = () => {
         }));
         setMoveNumber(prev => prev + 1);
         
-        // Проверяем шах/мат
+        // Проверяем шах/мат для белых после хода ИИ
         const isCheck = isKingInCheck(newBoard, 'white');
         setIsInCheck(prev => ({
           ...prev,
           white: isCheck
         }));
         
-        if (isCheck) {
+        // Проверяем есть ли доступные ходы у белых
+        const availableMovesForWhite = ChessAI.getAllMoves(newBoard, 'white');
+        
+        if (availableMovesForWhite.length === 0) {
+          if (isCheck) {
+            setGameStatus('checkmate');
+            setShowEndGameModal(true);
+          } else {
+            setGameStatus('stalemate');
+            setShowEndGameModal(true);
+          }
+        } else if (isCheck) {
           setGameStatus('check');
         } else {
           setGameStatus('playing');
