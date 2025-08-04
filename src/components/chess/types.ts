@@ -16,6 +16,8 @@ export interface GameMove {
   capturedPiece: ChessPiece | null;
   notation: string;
   boardAfterMove: (ChessPiece | null)[][];
+  isEnPassant?: boolean;
+  isPawnDoubleMove?: boolean;
 }
 
 export interface GameHistory {

@@ -200,6 +200,7 @@ const InteractiveChessBoard = () => {
           }
         }
 
+        // Обычные взятия пешкой
         for (const colOffset of [-1, 1]) {
           const newRow = row + direction;
           const newCol = col + colOffset;
@@ -207,6 +208,24 @@ const InteractiveChessBoard = () => {
             const targetPiece = board[newRow][newCol];
             if (targetPiece && targetPiece.color !== piece.color) {
               moves.push({ row: newRow, col: newCol });
+            }
+          }
+        }
+        
+        // Взятие на проходе
+        if (gameHistory.moves.length > 0) {
+          const lastMove = gameHistory.moves[gameHistory.moves.length - 1];
+          if (lastMove.isPawnDoubleMove && lastMove.piece.type === 'pawn' && 
+              lastMove.piece.color !== piece.color) {
+            // Проверяем, находится ли наша пешка рядом с пешкой противника, которая сделала двойной ход
+            const enemyPawnRow = lastMove.to.row;
+            const enemyPawnCol = lastMove.to.col;
+            const ourPawnExpectedRow = piece.color === 'white' ? 3 : 4; // 5-й ряд для белых, 4-й для черных
+            
+            if (row === ourPawnExpectedRow && enemyPawnRow === row && 
+                Math.abs(enemyPawnCol - col) === 1) {
+              // Можем взять на проходе
+              moves.push({ row: row + direction, col: enemyPawnCol });
             }
           }
         }
@@ -518,16 +537,9 @@ const InteractiveChessBoard = () => {
           } else if (col === 2) { // Длинная рокировка
             // Перемещаем ладью с a на d
             const rook = newBoard[kingRow][0];
-            console.log('Длинная рокировка:', {
-              kingRow, 
-              rookBefore: rook, 
-              rookType: rook?.type,
-              targetSquare: `${kingRow},3`
-            });
             if (rook && rook.type === 'rook') {
               newBoard[kingRow][0] = null;
               newBoard[kingRow][3] = rook;
-              console.log('Ладья перемещена с', `${kingRow},0`, 'на', `${kingRow},3`);
             }
           }
         }
@@ -575,23 +587,44 @@ const InteractiveChessBoard = () => {
           return;
         }
         
+        // Проверяем взятие на проходе
+        let isEnPassant = false;
+        let actualCapturedPiece = capturedPiece;
+        
+        if (movingPiece.type === 'pawn' && !capturedPiece && col !== selectedSquare.col) {
+          // Это взятие на проходе
+          isEnPassant = true;
+          const enemyPawnRow = movingPiece.color === 'white' ? row + 1 : row - 1;
+          actualCapturedPiece = newBoard[enemyPawnRow][col];
+          newBoard[enemyPawnRow][col] = null; // Убираем взятую пешку
+        }
+        
+        // Проверяем двойной ход пешки
+        const isPawnDoubleMove = movingPiece.type === 'pawn' && 
+          Math.abs(row - selectedSquare.row) === 2;
+        
         const nextPlayer = currentPlayer === 'white' ? 'black' : 'white';
         
-        // Специальная нотация для рокировки
+        // Специальная нотация для рокировки и взятия на проходе
         let notation: string;
         if (movingPiece.type === 'king' && Math.abs(col - selectedSquare.col) === 2) {
           notation = col === 6 ? 'O-O' : 'O-O-O'; // Короткая или длинная рокировка
+        } else if (isEnPassant) {
+          const files = 'abcdefgh';
+          notation = `${files[selectedSquare.col]}x${files[col]}${8 - row} e.p.`;
         } else {
-          notation = createMoveNotation(movingPiece, selectedSquare, { row, col }, capturedPiece);
+          notation = createMoveNotation(movingPiece, selectedSquare, { row, col }, actualCapturedPiece);
         }
         
         const gameMove: GameMove = {
           from: selectedSquare,
           to: { row, col },
           piece: movingPiece,
-          capturedPiece,
+          capturedPiece: actualCapturedPiece,
           notation,
-          boardAfterMove: newBoard.map(r => [...r])
+          boardAfterMove: newBoard.map(r => [...r]),
+          isEnPassant,
+          isPawnDoubleMove
         };
         
         setBoard(newBoard);
