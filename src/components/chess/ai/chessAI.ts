@@ -465,7 +465,10 @@ export class ChessAI {
     const depth = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 3 : 4;
     const moves = this.getAllMoves(board, 'black');
     
+    console.log(`ИИ: найдено ${moves.length} возможных ходов`);
+    
     if (moves.length === 0) {
+      console.log('ИИ: нет доступных ходов - мат или пат');
       return null;
     }
 

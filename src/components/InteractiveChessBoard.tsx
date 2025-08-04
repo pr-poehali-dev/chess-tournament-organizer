@@ -341,6 +341,19 @@ const InteractiveChessBoard = () => {
       // Используем продвинутый ИИ с минимакс алгоритмом
       const bestMove = ChessAI.getBestMove(board, aiDifficulty);
       
+      if (!bestMove) {
+        // Нет доступных ходов - мат или пат
+        const isInCheck = ChessAI.isKingInCheck(board, 'black');
+        if (isInCheck) {
+          setGameStatus('checkmate');
+        } else {
+          setGameStatus('stalemate');
+        }
+        setShowEndGameModal(true);
+        setIsAiThinking(false);
+        return;
+      }
+      
       if (bestMove) {
         
         const capturedPiece = board[bestMove.to.row][bestMove.to.col];
@@ -396,7 +409,8 @@ const InteractiveChessBoard = () => {
 
   // Эффект для ходов ИИ
   useEffect(() => {
-    if (gameMode === 'human-vs-ai' && currentPlayer === 'black' && gameStatus === 'playing' && !isAiThinking) {
+    if (gameMode === 'human-vs-ai' && currentPlayer === 'black' && 
+        (gameStatus === 'playing' || gameStatus === 'check') && !isAiThinking) {
       makeAiMove();
     }
   }, [currentPlayer, gameMode, gameStatus]);
