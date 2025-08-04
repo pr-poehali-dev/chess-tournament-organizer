@@ -80,18 +80,22 @@ const InteractiveChessBoard = () => {
     const currentPosition = boardToString(newBoard);
     let repetitionCount = 1; // Текущая позиция уже считается
 
-    // Проверяем начальную позицию (если вернулись к ней)
-    const initialPosition = boardToString(initializeBoard());
-    if (currentPosition === initialPosition && currentHistory.length >= 4) {
-      repetitionCount++;
-    }
-
     // Проверяем все предыдущие позиции в истории
     for (const move of currentHistory) {
       if (boardToString(move.boardAfterMove) === currentPosition) {
         repetitionCount++;
         if (repetitionCount >= 3) {
-          console.log('Трёхкратное повторение обнаружено!', { currentPosition, repetitionCount });
+          return true;
+        }
+      }
+    }
+
+    // Проверяем начальную позицию (если вернулись к ней после нескольких ходов)
+    if (currentHistory.length >= 4) {
+      const initialPosition = boardToString(initializeBoard());
+      if (currentPosition === initialPosition) {
+        repetitionCount++;
+        if (repetitionCount >= 3) {
           return true;
         }
       }
@@ -473,9 +477,7 @@ const InteractiveChessBoard = () => {
         setMoveNumber(prev => prev + 1);
         
         // Проверяем трёхкратное повторение позиции
-        console.log('ИИ: Проверяем трёхкратное повторение...');
         if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1), gameMove])) {
-          console.log('ИИ: НИЧЬЯ: Трёхкратное повторение!');
           setGameStatus('draw');
           setShowEndGameModal(true);
           setIsAiThinking(false);
@@ -704,9 +706,7 @@ const InteractiveChessBoard = () => {
         }));
         
         // Проверяем трёхкратное повторение позиции
-        console.log('Проверяем трёхкратное повторение...');
         if (checkThreefoldRepetition(newBoard, [...gameHistory.moves.slice(0, gameHistory.currentMoveIndex + 1), gameMove])) {
-          console.log('НИЧЬЯ: Трёхкратное повторение!');
           setGameStatus('draw');
           setShowEndGameModal(true);
           return;
