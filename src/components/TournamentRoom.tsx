@@ -588,12 +588,12 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                       )}
                     </div>
                     <div className="text-gray-900 font-medium">{player.points.toFixed(1)}</div>
-                    {player.roundResults.map((result, roundIndex) => (
+                    {player.roundResults && player.roundResults.map((result, roundIndex) => (
                       <div key={roundIndex} className="text-center font-medium">
-                        {result === '1' && <span className="text-green-600">1</span>}
-                        {result === '0' && <span className="text-red-600">0</span>}
-                        {result === '0.5' && <span className="text-orange-500">0.5</span>}
-                        {result === '-' && <span className="text-gray-400">-</span>}
+                        {result === '1' ? <span className="text-green-600">1</span> : null}
+                        {result === '0' ? <span className="text-red-600">0</span> : null}
+                        {result === '0.5' ? <span className="text-orange-500">0.5</span> : null}
+                        {result === '-' ? <span className="text-gray-400">-</span> : null}
                       </div>
                     ))}
                     <div className="text-gray-600">1650</div>
