@@ -533,7 +533,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-80">
+            <ScrollArea className="h-[calc(100vh-12rem)]">
               <div className="p-4">
                 <div className="grid grid-cols-7 gap-2 text-sm font-medium text-gray-500 mb-3">
                   <div>Место</div>
