@@ -627,11 +627,3 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
 };
 
 export default TournamentRoom;
-
-
-      </div>
-    </div>
-  );
-};
-
-export default TournamentRoom;
