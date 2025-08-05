@@ -27,7 +27,7 @@ interface TournamentStanding {
   draws: number;
   games: number;
   performance: number;
-  roundResults: string[]; // Результат каждого тура: '1', '0', '½', '-'
+  roundResults: string[]; // Результат каждого тура: '1', '0', '0.5', '-'
 }
 
 interface Match {
@@ -140,7 +140,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         draws: 1,
         games: 3,
         performance: 2050,
-        roundResults: ['1', '½', '1', '-', '-']
+        roundResults: ['1', '0.5', '1', '-', '-']
       },
       {
         playerId: currentUser,
@@ -151,7 +151,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         draws: 1,
         games: 3,
         performance: 2040,
-        roundResults: ['1', '1', '½', '-', '-']
+        roundResults: ['1', '1', '0.5', '-', '-']
       },
       {
         playerId: 'Сидоров Дмитрий Александрович',
@@ -173,7 +173,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         draws: 2,
         games: 3,
         performance: 1880,
-        roundResults: ['½', '1', '½', '-', '-']
+        roundResults: ['0.5', '1', '0.5', '-', '-']
       },
       {
         playerId: 'Козлова Елена Павловна',
@@ -184,7 +184,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         draws: 1,
         games: 3,
         performance: 1750,
-        roundResults: ['1', '0', '½', '-', '-']
+        roundResults: ['1', '0', '0.5', '-', '-']
       },
       {
         playerId: 'Волков Андрей Петрович',
@@ -195,7 +195,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         draws: 1,
         games: 3,
         performance: 1720,
-        roundResults: ['½', '1', '0', '-', '-']
+        roundResults: ['0.5', '1', '0', '-', '-']
       },
       {
         playerId: 'Лебедева Анна Леонидовна',
@@ -217,7 +217,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         draws: 1,
         games: 3,
         performance: 1500,
-        roundResults: ['0', '½', '0', '-', '-']
+        roundResults: ['0', '0.5', '0', '-', '-']
       },
       {
         playerId: 'Смирнова Ольга Викторовна',
@@ -592,7 +592,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                       <div key={roundIndex} className="text-center font-medium">
                         {result === '1' && <span className="text-green-600">1</span>}
                         {result === '0' && <span className="text-red-600">0</span>}
-                        {result === '½' && <span className="text-orange-500">0.5</span>}
+                        {result === '0.5' && <span className="text-orange-500">0.5</span>}
                         {result === '-' && <span className="text-gray-400">-</span>}
                       </div>
                     ))}
