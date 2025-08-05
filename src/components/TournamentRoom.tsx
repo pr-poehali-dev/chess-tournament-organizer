@@ -27,6 +27,7 @@ interface TournamentStanding {
   draws: number;
   games: number;
   performance: number;
+  roundResults: string[]; // Результат каждого тура: '1', '0', '½', '-'
 }
 
 interface Match {
@@ -64,6 +65,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentRound, setCurrentRound] = useState(4);
+  const totalRounds = 5; // Всего туров в турнире
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   // Проверка авторизации участника
@@ -126,7 +128,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 0,
         draws: 0,
         games: 3,
-        performance: 2200
+        performance: 2200,
+        roundResults: ['1', '1', '1', '-', '-']
       },
       {
         playerId: 'Иванова Мария Владимировна',
@@ -136,7 +139,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 0,
         draws: 1,
         games: 3,
-        performance: 2050
+        performance: 2050,
+        roundResults: ['1', '½', '1', '-', '-']
       },
       {
         playerId: currentUser,
@@ -146,7 +150,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 0,
         draws: 1,
         games: 3,
-        performance: 2040
+        performance: 2040,
+        roundResults: ['1', '1', '½', '-', '-']
       },
       {
         playerId: 'Сидоров Дмитрий Александрович',
@@ -156,7 +161,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 1,
         draws: 0,
         games: 3,
-        performance: 1900
+        performance: 1900,
+        roundResults: ['1', '1', '0', '-', '-']
       },
       {
         playerId: 'Морозов Игорь Михайлович',
@@ -166,7 +172,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 0,
         draws: 2,
         games: 3,
-        performance: 1880
+        performance: 1880,
+        roundResults: ['½', '1', '½', '-', '-']
       },
       {
         playerId: 'Козлова Елена Павловна',
@@ -176,7 +183,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 1,
         draws: 1,
         games: 3,
-        performance: 1750
+        performance: 1750,
+        roundResults: ['1', '0', '½', '-', '-']
       },
       {
         playerId: 'Волков Андрей Петрович',
@@ -186,7 +194,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 1,
         draws: 1,
         games: 3,
-        performance: 1720
+        performance: 1720,
+        roundResults: ['½', '1', '0', '-', '-']
       },
       {
         playerId: 'Лебедева Анна Леонидовна',
@@ -196,7 +205,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 2,
         draws: 0,
         games: 3,
-        performance: 1650
+        performance: 1650,
+        roundResults: ['0', '1', '0', '-', '-']
       },
       {
         playerId: 'Новиков Сергей Николаевич',
@@ -206,7 +216,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 2,
         draws: 1,
         games: 3,
-        performance: 1500
+        performance: 1500,
+        roundResults: ['0', '½', '0', '-', '-']
       },
       {
         playerId: 'Смирнова Ольга Викторовна',
@@ -216,7 +227,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         losses: 3,
         draws: 0,
         games: 3,
-        performance: 1400
+        performance: 1400,
+        roundResults: ['0', '0', '0', '-', '-']
       }
     ];
 
@@ -365,6 +377,19 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
       return `${parts[0]} ${parts[1]}`; // Фамилия Имя
     }
     return fullName; // Если меньше 2 частей, возвращаем как есть
+  };
+
+  // Функция для максимально сокращенного отображения ФИО в таблице
+  const formatUsernameShort = (fullName: string) => {
+    if (fullName === 'Администратор') return fullName;
+    
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length >= 3) {
+      return `${parts[0]} ${parts[1][0]}.${parts[2][0]}.`; // Фамилия И.О.
+    } else if (parts.length >= 2) {
+      return `${parts[0]} ${parts[1][0]}.`; // Фамилия И.
+    }
+    return fullName;
   };
 
   const getStatusBadge = (status: Tournament['status']) => {
@@ -535,12 +560,15 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-12rem)]">
               <div className="p-4">
-                <div className="grid grid-cols-7 gap-2 text-sm font-medium text-gray-500 mb-3">
+                <div className="grid grid-cols-10 gap-2 text-sm font-medium text-gray-500 mb-3">
                   <div>Место</div>
                   <div>Игрок</div>
                   <div>Очки</div>
-                  <div>Партии</div>
-                  <div>+/-/=</div>
+                  <div>1</div>
+                  <div>2</div>
+                  <div>3</div>
+                  <div>4</div>
+                  <div>5</div>
                   <div>Рейтинг</div>
                   <div>Перф.</div>
                 </div>
@@ -548,28 +576,30 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                 {standings.map((player, index) => (
                   <div
                     key={player.playerId}
-                    className={`grid grid-cols-7 gap-2 text-sm py-2 rounded px-2 ${
+                    className={`grid grid-cols-10 gap-2 text-sm py-2 rounded px-2 ${
                       player.playerId === currentUser ? 'bg-primary/10' : ''
                     }`}
                   >
                     <div className="text-gray-900 font-medium">{index + 1}</div>
-                    <div className="text-gray-900 font-medium">
-                      {formatUsername(player.playerName)}
+                    <div className="text-gray-900 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                      {formatUsernameShort(player.playerName)}
                       {player.playerId === currentUser && (
-                        <Badge className="ml-2 text-xs bg-primary text-black">Вы</Badge>
+                        <Badge className="ml-1 text-xs bg-primary text-black">Вы</Badge>
                       )}
                     </div>
                     <div className="text-gray-900 font-medium">{player.points.toFixed(1)}</div>
-                    <div className="text-gray-600">{player.games}</div>
-                    <div className="text-gray-600">
-                      <span className="text-green-600">{player.wins}</span>/
-                      <span className="text-red-600">{player.losses}</span>/
-                      <span className="text-orange-500">{player.draws}</span>
-                    </div>
+                    {player.roundResults.map((result, roundIndex) => (
+                      <div key={roundIndex} className="text-center font-medium">
+                        {result === '1' && <span className="text-green-600">1</span>}
+                        {result === '0' && <span className="text-red-600">0</span>}
+                        {result === '½' && <span className="text-orange-500">½</span>}
+                        {result === '-' && <span className="text-gray-400">-</span>}
+                      </div>
+                    ))}
                     <div className="text-gray-600">1650</div>
                     <div className="text-gray-600">{player.performance}</div>
                   </div>
-                ))}
+                ))
               </div>
             </ScrollArea>
           </CardContent>
