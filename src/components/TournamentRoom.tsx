@@ -573,7 +573,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                   <div>Перф.</div>
                 </div>
                 <Separator className="mb-3" />
-                {standings.map((player, index) => (
+                {standings.map((player, index) => {
+                  return (
                   <div
                     key={player.playerId}
                     className={`grid grid-cols-10 gap-2 text-sm py-2 rounded px-2 ${
@@ -647,7 +648,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
