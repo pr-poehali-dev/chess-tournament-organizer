@@ -114,7 +114,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
   };
 
   const loadTournamentData = () => {
-    if (!isAuthorized || !tournament) return;
+    // Убираем проверку isAuthorized, так как данные всегда нужно загружать
 
     // Реалистичная турнирная таблица после 3 туров (10 игроков)
     const mockStandings: TournamentStanding[] = [
@@ -270,7 +270,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
   };
 
   const loadChatMessages = () => {
-    if (!isAuthorized) return;
+    // Убираем проверку isAuthorized, так как сообщения всегда нужно загружать
 
     const mockMessages: ChatMessage[] = [
       {
