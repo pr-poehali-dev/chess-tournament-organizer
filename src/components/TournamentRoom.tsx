@@ -649,7 +649,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                       </div>
                     </div>
                   </div>
-                  );
+                  )
                 })}
               </div>
             </CardContent>
