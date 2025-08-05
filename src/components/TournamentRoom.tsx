@@ -431,9 +431,9 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Информация о турнире */}
         <Card className="lg:col-span-2 shadow-lg">
-          <CardHeader>
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl text-gray-900 flex items-center gap-2">
+              <CardTitle className="text-xl text-gray-900 flex items-center gap-2">
                 <Icon name="Trophy" size={24} className="text-primary" />
                 {tournament.name}
               </CardTitle>
@@ -445,9 +445,9 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4">{tournament.description}</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <CardContent className="py-3">
+            <p className="text-gray-600 mb-2 text-sm">{tournament.description}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
               <div>
                 <span className="text-gray-500">Формат:</span>
                 <p className="text-gray-900 font-medium">
