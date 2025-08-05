@@ -428,7 +428,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Информация о турнире */}
         <Card className="lg:col-span-1 shadow-lg">
           <CardHeader>
@@ -471,8 +471,12 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
           </CardContent>
         </Card>
 
-        {/* Чат */}
-        <Card className="shadow-lg">
+
+
+        {/* Правая колонка: Чат и текущие матчи */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Чат */}
+          <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
               <Icon name="MessageSquare" size={20} className="text-primary" />
@@ -520,6 +524,54 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
             </div>
           </CardContent>
         </Card>
+
+          {/* Текущие матчи */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+                <Icon name="Clock" size={20} className="text-primary" />
+                Текущий тур
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {matches.map((match) => (
+                  <div
+                    key={match.id}
+                    className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-gray-500">Тур {match.round}</div>
+                      <Badge
+                        variant={match.status === 'in_progress' ? 'default' : 'secondary'}
+                        className={`text-xs ${
+                          match.status === 'in_progress' ? 'bg-primary text-black' : ''
+                        }`}
+                      >
+                        {match.status === 'in_progress' ? 'Играют' : 
+                         match.status === 'finished' ? 'Завершено' : 'Ожидание'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-gray-900 text-sm">
+                        <div>{formatUsername(match.player1)}</div>
+                        <div className="text-gray-500">vs</div>
+                        <div>{formatUsername(match.player2)}</div>
+                      </div>
+                      <div className="text-right">
+                        {match.result ? (
+                          <div className="text-gray-900 font-medium">{match.result}</div>
+                        ) : (
+                          <div className="text-primary text-sm animate-pulse">В игре...</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Турнирная таблица */}
         <Card className="lg:col-span-2 shadow-lg">
@@ -572,52 +624,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
           </CardContent>
         </Card>
 
-        {/* Текущие матчи */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
-              <Icon name="Clock" size={20} className="text-primary" />
-              Текущий тур
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {matches.map((match) => (
-                <div
-                  key={match.id}
-                  className="p-3 bg-gray-50 rounded-lg border border-gray-200"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm text-gray-500">Тур {match.round}</div>
-                    <Badge
-                      variant={match.status === 'in_progress' ? 'default' : 'secondary'}
-                      className={`text-xs ${
-                        match.status === 'in_progress' ? 'bg-primary text-black' : ''
-                      }`}
-                    >
-                      {match.status === 'in_progress' ? 'Играют' : 
-                       match.status === 'finished' ? 'Завершено' : 'Ожидание'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-gray-900 text-sm">
-                      <div>{formatUsername(match.player1)}</div>
-                      <div className="text-gray-500">vs</div>
-                      <div>{formatUsername(match.player2)}</div>
-                    </div>
-                    <div className="text-right">
-                      {match.result ? (
-                        <div className="text-gray-900 font-medium">{match.result}</div>
-                      ) : (
-                        <div className="text-primary text-sm animate-pulse">В игре...</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
     </div>
   );
