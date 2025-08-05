@@ -63,7 +63,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
   const [matches, setMatches] = useState<Match[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [currentRound, setCurrentRound] = useState(1);
+  const [currentRound, setCurrentRound] = useState(4);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   // Проверка авторизации участника
@@ -86,11 +86,22 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
     const mockTournament: Tournament = {
       id: tournamentId,
       name: "Чемпионат Клуба «Белая Ладья»",
-      description: "Открытый турнир по шахматам в классическом контроле времени. Добро пожаловать!",
+      description: "Швейцарская система, 9 туров. Контроль времени: 15 минут + 10 секунд на ход.",
       status: 'active',
-      participants: [currentUser, 'Козлов Александр Игоревич', 'Волкова Мария Владимировна', 'Дмитриев Дмитрий Сергеевич', 'Петрова Елена Павловна', 'Морозов Игорь Михайлович', 'Лебедева Анна Леонидовна', 'Новиков Сергей Николаевич'],
+      participants: [
+        currentUser, 
+        'Петров Александр Сергеевич', 
+        'Иванова Мария Владимировна', 
+        'Сидоров Дмитрий Александрович', 
+        'Козлова Елена Павловна', 
+        'Морозов Игорь Михайлович', 
+        'Лебедева Анна Леонидовна', 
+        'Новиков Сергей Николаевич',
+        'Волков Андрей Петрович',
+        'Смирнова Ольга Викторовна'
+      ],
       startDate: new Date().toISOString(),
-      format: 'round_robin',
+      format: 'swiss',
       timeControl: '15+10'
     };
 
@@ -105,37 +116,153 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
   const loadTournamentData = () => {
     if (!isAuthorized || !tournament) return;
 
-    // Генерация турнирной таблицы
-    const mockStandings: TournamentStanding[] = tournament.participants.map((player, index) => ({
-      playerId: player,
-      playerName: player,
-      points: Math.random() * 5 + 1,
-      wins: Math.floor(Math.random() * 3) + 1,
-      losses: Math.floor(Math.random() * 2),
-      draws: Math.floor(Math.random() * 2),
-      games: Math.floor(Math.random() * 5) + 3,
-      performance: Math.floor(Math.random() * 400) + 1600
-    })).sort((a, b) => b.points - a.points);
+    // Реалистичная турнирная таблица после 3 туров (10 игроков)
+    const mockStandings: TournamentStanding[] = [
+      {
+        playerId: 'Петров Александр Сергеевич',
+        playerName: 'Петров Александр Сергеевич',
+        points: 3.0,
+        wins: 3,
+        losses: 0,
+        draws: 0,
+        games: 3,
+        performance: 2200
+      },
+      {
+        playerId: 'Иванова Мария Владимировна',
+        playerName: 'Иванова Мария Владимировна',
+        points: 2.5,
+        wins: 2,
+        losses: 0,
+        draws: 1,
+        games: 3,
+        performance: 2050
+      },
+      {
+        playerId: currentUser,
+        playerName: currentUser,
+        points: 2.5,
+        wins: 2,
+        losses: 0,
+        draws: 1,
+        games: 3,
+        performance: 2040
+      },
+      {
+        playerId: 'Сидоров Дмитрий Александрович',
+        playerName: 'Сидоров Дмитрий Александрович',
+        points: 2.0,
+        wins: 2,
+        losses: 1,
+        draws: 0,
+        games: 3,
+        performance: 1900
+      },
+      {
+        playerId: 'Морозов Игорь Михайлович',
+        playerName: 'Морозов Игорь Михайлович',
+        points: 2.0,
+        wins: 1,
+        losses: 0,
+        draws: 2,
+        games: 3,
+        performance: 1880
+      },
+      {
+        playerId: 'Козлова Елена Павловна',
+        playerName: 'Козлова Елена Павловна',
+        points: 1.5,
+        wins: 1,
+        losses: 1,
+        draws: 1,
+        games: 3,
+        performance: 1750
+      },
+      {
+        playerId: 'Волков Андрей Петрович',
+        playerName: 'Волков Андрей Петрович',
+        points: 1.5,
+        wins: 1,
+        losses: 1,
+        draws: 1,
+        games: 3,
+        performance: 1720
+      },
+      {
+        playerId: 'Лебедева Анна Леонидовна',
+        playerName: 'Лебедева Анна Леонидовна',
+        points: 1.0,
+        wins: 1,
+        losses: 2,
+        draws: 0,
+        games: 3,
+        performance: 1650
+      },
+      {
+        playerId: 'Новиков Сергей Николаевич',
+        playerName: 'Новиков Сергей Николаевич',
+        points: 0.5,
+        wins: 0,
+        losses: 2,
+        draws: 1,
+        games: 3,
+        performance: 1500
+      },
+      {
+        playerId: 'Смирнова Ольга Викторовна',
+        playerName: 'Смирнова Ольга Викторовна',
+        points: 0.0,
+        wins: 0,
+        losses: 3,
+        draws: 0,
+        games: 3,
+        performance: 1400
+      }
+    ];
 
     setStandings(mockStandings);
 
-    // Генерация текущих матчей
+    // Матчи 4-го тура (текущего)
     const mockMatches: Match[] = [
       {
         id: '1',
-        player1: tournament.participants[0],
-        player2: tournament.participants[1],
+        player1: 'Петров Александр Сергеевич',
+        player2: 'Иванова Мария Владимировна',
         result: null,
         round: currentRound,
         status: 'in_progress'
       },
       {
         id: '2',
-        player1: tournament.participants[2],
-        player2: tournament.participants[3],
+        player1: currentUser,
+        player2: 'Сидоров Дмитрий Александрович',
+        result: null,
+        round: currentRound,
+        status: 'in_progress'
+      },
+      {
+        id: '3',
+        player1: 'Морозов Игорь Михайлович',
+        player2: 'Козлова Елена Павловна',
+        result: '1/2-1/2',
+        round: currentRound,
+        status: 'finished'
+      },
+      {
+        id: '4',
+        player1: 'Волков Андрей Петрович',
+        player2: 'Лебедева Анна Леонидовна',
         result: '1-0',
         round: currentRound,
         status: 'finished'
+      },
+      {
+        id: '5',
+        player1: 'Новиков Сергей Николаевич',
+        player2: 'Смирнова Ольга Викторовна',
+        result: null,
+        round: currentRound,
+        status: 'scheduled'
       }
     ];
 
@@ -150,22 +277,57 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         id: '1',
         username: 'Администратор',
         message: 'Добро пожаловать в турнирный зал! Удачи всем участникам!',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
         isAdmin: true
       },
       {
         id: '2',
-        username: 'Козлов Александр Игоревич',
-        message: 'Всем привет! Отличный турнир!',
-        timestamp: new Date(Date.now() - 1800000).toISOString(),
+        username: 'Петров Александр Сергеевич',
+        message: 'Всем привет! Хороший турнир получается 💪',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
         isAdmin: false
       },
       {
         id: '3',
-        username: 'Волкова Мария Владимировна',
-        message: 'Удачи всем в следующем туре!',
+        username: 'Иванова Мария Владимировна',
+        message: 'Да, очень интересная борьба в лидирующей группе!',
+        timestamp: new Date(Date.now() - 2700000).toISOString(),
+        isAdmin: false
+      },
+      {
+        id: '4',
+        username: 'Сидоров Дмитрий Александрович',
+        message: 'Кто-то помнит время партий? Сколько у нас остается?',
+        timestamp: new Date(Date.now() - 1800000).toISOString(),
+        isAdmin: false
+      },
+      {
+        id: '5',
+        username: 'Администратор',
+        message: '15 минут + 10 секунд на ход. Не забывайте следить за временем!',
+        timestamp: new Date(Date.now() - 1500000).toISOString(),
+        isAdmin: true
+      },
+      {
+        id: '6',
+        username: 'Морозов Игорь Михайлович',
+        message: 'Спасибо за напоминание! Удачи всем в 4-м туре 🏆',
         timestamp: new Date(Date.now() - 900000).toISOString(),
         isAdmin: false
+      },
+      {
+        id: '7',
+        username: 'Козлова Елена Павловна',
+        message: 'Когда планируется следующий тур?',
+        timestamp: new Date(Date.now() - 300000).toISOString(),
+        isAdmin: false
+      },
+      {
+        id: '8',
+        username: 'Администратор',
+        message: '5-й тур начнется через 30 минут после завершения всех партий текущего тура.',
+        timestamp: new Date(Date.now() - 120000).toISOString(),
+        isAdmin: true
       }
     ];
 
@@ -289,7 +451,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
               <div>
                 <span className="text-gray-500">Формат:</span>
                 <p className="text-gray-900 font-medium">
-                  {tournament.format === 'round_robin' ? 'Круговая система' : 'На выбывание'}
+                  {tournament.format === 'round_robin' ? 'Круговая система' : 
+                   tournament.format === 'swiss' ? 'Швейцарская система' : 'На выбывание'}
                 </p>
               </div>
               <div>
@@ -388,7 +551,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                   >
                     <div className="text-gray-900 font-medium">{index + 1}</div>
                     <div className="text-gray-900 font-medium">
-                      {player.playerName}
+                      {formatUsername(player.playerName)}
                       {player.playerId === currentUser && (
                         <Badge className="ml-2 text-xs bg-primary text-black">Вы</Badge>
                       )}
@@ -432,14 +595,15 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                         match.status === 'in_progress' ? 'bg-primary text-black' : ''
                       }`}
                     >
-                      {match.status === 'in_progress' ? 'Играют' : 'Завершено'}
+                      {match.status === 'in_progress' ? 'Играют' : 
+                       match.status === 'finished' ? 'Завершено' : 'Ожидание'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="text-gray-900 text-sm">
-                      <div>{match.player1}</div>
+                      <div>{formatUsername(match.player1)}</div>
                       <div className="text-gray-500">vs</div>
-                      <div>{match.player2}</div>
+                      <div>{formatUsername(match.player2)}</div>
                     </div>
                     <div className="text-right">
                       {match.result ? (
