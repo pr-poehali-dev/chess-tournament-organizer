@@ -428,8 +428,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Левая колонка: Информация о турнире + Чат */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Левая колонка: Информация о турнире + Чат (20%) */}
         <div className="lg:col-span-1 space-y-6">
           {/* Информация о турнире */}
           <Card className="shadow-lg">
@@ -525,7 +525,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
         </div>
 
         {/* Турнирная таблица */}
-        <Card className="lg:col-span-1 shadow-lg">
+        <Card className="lg:col-span-3 shadow-lg">
           <CardHeader>
             <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
               <Icon name="BarChart3" size={20} className="text-primary" />
