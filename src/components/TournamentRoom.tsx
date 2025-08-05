@@ -592,7 +592,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                       <div key={roundIndex} className="text-center font-medium">
                         {result === '1' && <span className="text-green-600">1</span>}
                         {result === '0' && <span className="text-red-600">0</span>}
-                        {result === '½' && <span className="text-orange-500">½</span>}
+                        {result === '½' && <span className="text-orange-500">0.5</span>}
                         {result === '-' && <span className="text-gray-400">-</span>}
                       </div>
                     ))}
