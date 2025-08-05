@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
 import { UserData } from '@/types/user';
 import InteractiveChessBoard from '@/components/InteractiveChessBoard';
+import TournamentRoom from '@/components/TournamentRoom';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -36,6 +37,8 @@ const Index = () => {
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [selectedTournamentForRegistration, setSelectedTournamentForRegistration] = useState<any>(null);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'error'>('pending');
+  const [showTournamentRoom, setShowTournamentRoom] = useState(false);
+  const [currentTournamentId, setCurrentTournamentId] = useState<string | null>(null);
 
   // Функция обработки регистрации на турнир с оплатой
   const handleTournamentRegistration = (tournament: any) => {
@@ -164,29 +167,39 @@ const Index = () => {
     return new Date(dateString).toLocaleDateString('ru-RU');
   };
 
+  // Функция для входа в турнирный зал
+  const enterTournamentRoom = (tournamentId: string) => {
+    if (!isLoggedIn) {
+      alert('Для входа в турнирный зал необходимо войти в систему');
+      return;
+    }
+    setCurrentTournamentId(tournamentId);
+    setShowTournamentRoom(true);
+  };
+
   const upcomingTournaments = [
     {
-      id: 1,
+      id: 'tournament_1',
       title: 'Весенний турнир новичков',
       date: '2025-04-15',
       time: '10:00',
       participants: 24,
       maxParticipants: 32,
       ageGroup: '6-10 лет',
-      status: 'Регистрация открыта'
+      status: 'Активный турнир'
     },
     {
-      id: 2,
+      id: 'tournament_2',
       title: 'Кубок юных гроссмейстеров',
       date: '2025-04-22',
       time: '14:00',
       participants: 16,
       maxParticipants: 16,
       ageGroup: '11-15 лет',
-      status: 'Места заполнены'
+      status: 'Активный турнир'
     },
     {
-      id: 3,
+      id: 'tournament_3',
       title: 'Летний чемпионат',
       date: '2025-05-05',
       time: '09:00',
@@ -339,13 +352,24 @@ const Index = () => {
                       <Icon name="Users" size={16} className="mr-2" />
                       {tournament.participants}/{tournament.maxParticipants} участников
                     </div>
-                    <div className="pt-3">
-                      <Button 
-                        className="w-full bg-primary hover:bg-gold-600 text-black"
-                        disabled={tournament.status === 'Места заполнены'}
-                      >
-                        {tournament.status === 'Места заполнены' ? 'Мест нет' : 'Зарегистрироваться'}
-                      </Button>
+                    <div className="pt-3 space-y-2">
+                      {tournament.status === 'Активный турнир' ? (
+                        <Button 
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => enterTournamentRoom(tournament.id)}
+                        >
+                          <Icon name="Users" size={16} className="mr-2" />
+                          Войти в турнирный зал
+                        </Button>
+                      ) : (
+                        <Button 
+                          className="w-full bg-primary hover:bg-gold-600 text-black"
+                          disabled={tournament.status === 'Места заполнены'}
+                          onClick={() => handleTournamentRegistration(tournament)}
+                        >
+                          {tournament.status === 'Места заполнены' ? 'Мест нет' : 'Зарегистрироваться'}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -466,15 +490,26 @@ const Index = () => {
                       250 ₽
                     </div>
                   </div>
-                  <div className="flex justify-end">
-                    <Button 
-                      size="sm"
-                      className="bg-primary hover:bg-gold-600 text-black"
-                      disabled={tournament.status === 'Места заполнены'}
-                      onClick={() => handleTournamentRegistration(tournament)}
-                    >
-                      {tournament.status === 'Места заполнены' ? 'Мест нет' : 'Участвовать'}
-                    </Button>
+                  <div className="flex justify-end space-x-2">
+                    {tournament.status === 'Активный турнир' ? (
+                      <Button 
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => enterTournamentRoom(tournament.id)}
+                      >
+                        <Icon name="Users" size={14} className="mr-1" />
+                        Турнирный зал
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="sm"
+                        className="bg-primary hover:bg-gold-600 text-black"
+                        disabled={tournament.status === 'Места заполнены'}
+                        onClick={() => handleTournamentRegistration(tournament)}
+                      >
+                        {tournament.status === 'Места заполнены' ? 'Мест нет' : 'Участвовать'}
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -1385,6 +1420,20 @@ const Index = () => {
         return renderHome();
     }
   };
+
+  // Если открыт турнирный зал, показываем только его
+  if (showTournamentRoom && currentTournamentId && currentUser) {
+    return (
+      <TournamentRoom
+        tournamentId={currentTournamentId}
+        currentUser={currentUser.fullName || 'Гость'}
+        onBack={() => {
+          setShowTournamentRoom(false);
+          setCurrentTournamentId(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white font-body">
