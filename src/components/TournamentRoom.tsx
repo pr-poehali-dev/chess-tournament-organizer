@@ -88,7 +88,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
       name: "Чемпионат Клуба «Белая Ладья»",
       description: "Открытый турнир по шахматам в классическом контроле времени. Добро пожаловать!",
       status: 'active',
-      participants: [currentUser, 'Александр_К', 'Мария_В', 'Дмитрий_С', 'Елена_П', 'Игорь_М', 'Анна_Л', 'Сергей_Н'],
+      participants: [currentUser, 'Козлов Александр Игоревич', 'Волкова Мария Владимировна', 'Дмитриев Дмитрий Сергеевич', 'Петрова Елена Павловна', 'Морозов Игорь Михайлович', 'Лебедева Анна Леонидовна', 'Новиков Сергей Николаевич'],
       startDate: new Date().toISOString(),
       format: 'round_robin',
       timeControl: '15+10'
@@ -155,14 +155,14 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
       },
       {
         id: '2',
-        username: 'Александр_К',
+        username: 'Козлов Александр Игоревич',
         message: 'Всем привет! Отличный турнир!',
         timestamp: new Date(Date.now() - 1800000).toISOString(),
         isAdmin: false
       },
       {
         id: '3',
-        username: 'Мария_В',
+        username: 'Волкова Мария Владимировна',
         message: 'Удачи всем в следующем туре!',
         timestamp: new Date(Date.now() - 900000).toISOString(),
         isAdmin: false
@@ -192,6 +192,17 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Функция для сокращения ФИО до фамилии и имени
+  const formatUsername = (fullName: string) => {
+    if (fullName === 'Администратор') return fullName;
+    
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0]} ${parts[1]}`; // Фамилия Имя
+    }
+    return fullName; // Если меньше 2 частей, возвращаем как есть
   };
 
   const getStatusBadge = (status: Tournament['status']) => {
@@ -315,7 +326,7 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                         msg.isAdmin ? 'text-primary' : 'text-blue-600'
                       }`}>
                         {msg.isAdmin && <Icon name="Shield" size={14} className="inline mr-1" />}
-                        {msg.username}
+                        {formatUsername(msg.username)}
                       </span>
                       <span className="text-xs text-gray-400">
                         {formatTime(msg.timestamp)}
