@@ -600,7 +600,8 @@ const TournamentRoom: React.FC<TournamentRoomProps> = ({
                     <div className="text-gray-600">1650</div>
                     <div className="text-gray-600">{player.performance}</div>
                   </div>
-                ))
+                  );
+                })}
               </div>
             </ScrollArea>
           </CardContent>
