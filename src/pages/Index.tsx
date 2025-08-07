@@ -232,18 +232,18 @@ const Index = () => {
                 className="h-24 w-auto"
               />
             </div>
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4">
             {navigationItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
-                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-1 px-2 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
                   activeSection === item.id
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Icon name={item.icon as any} size={16} />
+                <Icon name={item.icon as any} size={14} />
                 <span>{item.label}</span>
               </button>
             ))}
