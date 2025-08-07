@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import Icon from '@/components/ui/icon';
 import { Tournament } from './types';
 import SwissTournamentDemo from '@/components/SwissTournamentDemo';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface TournamentsPageProps {
   upcomingTournaments: Tournament[];
@@ -28,6 +29,7 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
   onEnterTournamentRoom
 }) => {
   const [showSwissDemo, setShowSwissDemo] = useState(false);
+  const { isAdmin } = useAuth();
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
@@ -161,7 +163,7 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
             </CardContent>
           </Card>
 
-          {isLoggedIn && userRole === 'admin' && (
+          {isAdmin && (
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>Управление турнирами</CardTitle>

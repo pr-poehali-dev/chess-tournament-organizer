@@ -1,6 +1,9 @@
 import React from 'react';
 import Icon from '@/components/ui/icon';
 import { NavigationItem, ActiveSection } from './types';
+import { useAuth } from '@/contexts/AuthContext';
+import LoginForm from '@/components/auth/LoginForm';
+import UserProfile from '@/components/auth/UserProfile';
 
 interface NavigationProps {
   activeSection: ActiveSection;
@@ -13,6 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onSectionChange, 
   navigationItems 
 }) => {
+  const { isLoggedIn } = useAuth();
   return (
     <div>
       <nav className="bg-white shadow-sm border-b">
@@ -40,6 +44,14 @@ const Navigation: React.FC<NavigationProps> = ({
                   <span>{item.label}</span>
                 </button>
               ))}
+              
+              <div className="ml-6 pl-6 border-l border-gray-200">
+                {isLoggedIn ? (
+                  <UserProfile />
+                ) : (
+                  <LoginForm />
+                )}
+              </div>
             </div>
           </div>
         </div>
