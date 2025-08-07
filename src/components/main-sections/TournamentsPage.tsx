@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { Tournament } from './types';
+import SwissTournamentDemo from '@/components/SwissTournamentDemo';
 
 interface TournamentsPageProps {
   upcomingTournaments: Tournament[];
@@ -25,6 +27,7 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
   onTournamentRegistration,
   onEnterTournamentRoom
 }) => {
+  const [showSwissDemo, setShowSwissDemo] = useState(false);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
@@ -127,6 +130,34 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
                 onSelect={onDateChange}
                 className="rounded-md border"
               />
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Швейцарская система</CardTitle>
+              <CardDescription>
+                Изучите принципы проведения турниров
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Dialog open={showSwissDemo} onOpenChange={setShowSwissDemo}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-primary hover:bg-gold-600 text-black">
+                    <Icon name="BookOpen" size={16} className="mr-2" />
+                    Демо швейцарской системы
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Швейцарская система проведения турниров</DialogTitle>
+                    <DialogDescription>
+                      Интерактивная демонстрация с реальным турниром
+                    </DialogDescription>
+                  </DialogHeader>
+                  <SwissTournamentDemo />
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
