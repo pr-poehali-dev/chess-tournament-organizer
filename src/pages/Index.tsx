@@ -215,6 +215,7 @@ const Index = () => {
     { id: 'tournaments', label: 'Турниры', icon: 'Trophy' },
     { id: 'play', label: 'Игра', icon: 'Gamepad2' },
     { id: 'results', label: 'Результаты', icon: 'Award' },
+    { id: 'rewards', label: 'Награды', icon: 'Gift' },
     { id: 'about', label: 'О центре', icon: 'Info' },
     { id: 'contacts', label: 'Контакты', icon: 'Phone' },
     { id: 'profile', label: isLoggedIn ? 'Личный кабинет' : 'Регистрация', icon: 'User' }
@@ -1400,6 +1401,48 @@ const Index = () => {
     </div>
   );
 
+  const renderRewards = () => (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-900 mb-4">Награды и подарки</h1>
+        <p className="text-lg text-gray-600">Выбирайте награды за победы в турнирах</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 10 }, (_, index) => (
+          <Card key={index} className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
+                <Icon name="Gift" size={48} className="text-gray-400" />
+                <span className="ml-2 text-gray-500">Фото {index + 1}</span>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Награда {index + 1}</h3>
+              <p className="text-gray-600 text-sm mb-3">Описание награды будет добавлено позже</p>
+              <div className="flex items-center justify-between">
+                <Badge variant="secondary" className="bg-gold-100 text-gold-800">
+                  {10 + index * 5} очков
+                </Badge>
+                <Button size="sm" variant="outline">
+                  Выбрать
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="mt-12 bg-gradient-to-r from-primary/10 to-gold-100/50 rounded-lg p-6">
+        <div className="text-center">
+          <Icon name="Star" size={32} className="mx-auto text-gold-600 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Как получить награды?</h2>
+          <p className="text-gray-600">
+            Участвуйте в турнирах, занимайте призовые места и накапливайте очки для получения наград!
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
@@ -1410,6 +1453,8 @@ const Index = () => {
         return renderPlay();
       case 'results':
         return renderResults();
+      case 'rewards':
+        return renderRewards();
       case 'about':
         return renderAbout();
       case 'contacts':
