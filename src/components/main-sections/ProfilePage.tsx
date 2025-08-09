@@ -101,20 +101,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="p-4 bg-primary/10 rounded-lg">
-                  <div className="text-2xl font-bold text-primary">12</div>
+                  <div className="text-2xl font-bold text-primary">3
+</div>
                   <div className="text-sm text-gray-600">Турниров сыграно</div>
                 </div>
                 <div className="p-4 bg-green-100 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">5</div>
+                  <div className="text-2xl font-bold text-green-600">1
+</div>
                   <div className="text-sm text-gray-600">Призовых мест</div>
                 </div>
                 <div className="p-4 bg-yellow-100 rounded-lg">
                   <div className="text-2xl font-bold text-yellow-600">1125
 </div>
-                  <div className="text-sm text-gray-600">Рейтинг</div>
+                  <div className="text-sm text-gray-600">Рейтинг МШ</div>
                 </div>
                 <div className="p-4 bg-purple-100 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">85%</div>
+                  <div className="text-2xl font-bold text-purple-600">100%</div>
                   <div className="text-sm text-gray-600">Посещаемость</div>
                 </div>
               </div>
