@@ -109,7 +109,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   <div className="text-sm text-gray-600">Призовых мест</div>
                 </div>
                 <div className="p-4 bg-yellow-100 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">1650</div>
+                  <div className="text-2xl font-bold text-yellow-600">1125
+</div>
                   <div className="text-sm text-gray-600">Рейтинг</div>
                 </div>
                 <div className="p-4 bg-purple-100 rounded-lg">
