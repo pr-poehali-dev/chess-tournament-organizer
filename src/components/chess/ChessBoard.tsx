@@ -1,5 +1,6 @@
 import ChessPiece from './ChessPiece';
 import { ChessPiece as ChessPieceType, Position } from './types';
+import { useState } from 'react';
 
 interface ChessBoardProps {
   board: (ChessPieceType | null)[][];
@@ -18,6 +19,9 @@ const ChessBoard = ({
   showEndGameModal, 
   onSquareClick 
 }: ChessBoardProps) => {
+  const [draggedPiece, setDraggedPiece] = useState<{piece: ChessPieceType, from: Position} | null>(null);
+  const [dragOverSquare, setDragOverSquare] = useState<Position | null>(null);
+  
   const isLightSquare = (row: number, col: number) =>  (row + col) % 2 === 0;
 
   const isSquareSelected = (row: number, col: number) =>
@@ -25,6 +29,41 @@ const ChessBoard = ({
 
   const isPossibleMove = (row: number, col: number) =>
     possibleMoves.some(move => move.row === row && move.col === col);
+
+  const handleDragStart = (e: React.DragEvent, piece: ChessPieceType, row: number, col: number) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedPiece({ piece, from: { row, col } });
+    // Автоматически выбираем клетку при начале перетаскивания
+    onSquareClick(row, col);
+  };
+
+  const handleDragOver = (e: React.DragEvent, row: number, col: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverSquare({ row, col });
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSquare(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, row: number, col: number) => {
+    e.preventDefault();
+    setDragOverSquare(null);
+    
+    if (draggedPiece) {
+      // Совершаем ход, если это возможный ход
+      if (isPossibleMove(row, col)) {
+        onSquareClick(row, col);
+      }
+      setDraggedPiece(null);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedPiece(null);
+    setDragOverSquare(null);
+  };
 
   // Буквы для колонок (a-h)
   const columnLabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -66,11 +105,16 @@ const ChessBoard = ({
           const isPossible = isPossibleMove(row, col);
           const isKingInCheckSquare = piece && piece.type === 'king' && showEndGameModal &&
             ((piece.color === 'white' && isInCheck.white) || (piece.color === 'black' && isInCheck.black));
+          const isDragOver = dragOverSquare?.row === row && dragOverSquare?.col === col;
+          const isDraggedSquare = draggedPiece?.from.row === row && draggedPiece?.from.col === col;
 
           return (
             <div
               key={i}
               onClick={() => onSquareClick(row, col)}
+              onDragOver={(e) => handleDragOver(e, row, col)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, row, col)}
               className={`
                 aspect-square w-16 h-16 flex items-center justify-center text-4xl font-bold cursor-pointer
                 transition-all duration-200 relative
@@ -78,10 +122,22 @@ const ChessBoard = ({
                 ${isSelected ? 'ring-4 ring-primary ring-inset' : ''}
                 ${isPossible ? 'ring-2 ring-green-500 ring-inset' : ''}
                 ${isKingInCheckSquare ? 'ring-4 ring-red-500 ring-inset bg-red-100' : ''}
+                ${isDragOver && isPossible ? 'bg-green-200 ring-2 ring-green-600' : ''}
+                ${isDragOver && !isPossible ? 'bg-red-200' : ''}
+                ${isDraggedSquare ? 'opacity-50' : ''}
                 hover:brightness-110
               `}
             >
-              {piece && <ChessPiece piece={piece} />}
+              {piece && (
+                <div
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, piece, row, col)}
+                  onDragEnd={handleDragEnd}
+                  className="cursor-grab active:cursor-grabbing"
+                >
+                  <ChessPiece piece={piece} />
+                </div>
+              )}
               
               {isPossible && !piece && (
                 <div className="absolute inset-0 flex items-center justify-center">
