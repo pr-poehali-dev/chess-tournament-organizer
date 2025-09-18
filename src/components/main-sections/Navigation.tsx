@@ -2,8 +2,8 @@ import React from 'react';
 import Icon from '@/components/ui/icon';
 import { NavigationItem, ActiveSection } from './types';
 import { useAuth } from '@/contexts/AuthContext';
-import LoginForm from '@/components/auth/LoginForm';
 import UserProfile from '@/components/auth/UserProfile';
+import { Button } from '@/components/ui/button';
 
 interface NavigationProps {
   activeSection: ActiveSection;
@@ -47,9 +47,16 @@ const Navigation: React.FC<NavigationProps> = ({
               
               <div className="ml-6 pl-6 border-l border-gray-200">
                 {isLoggedIn ? (
-                  <UserProfile />
+                  <UserProfile onNavigateToProfile={() => onSectionChange('profile')} />
                 ) : (
-                  <LoginForm />
+                  <Button 
+                    variant="outline" 
+                    onClick={() => onSectionChange('profile')}
+                    className="flex items-center gap-2"
+                  >
+                    <Icon name="LogIn" size={16} />
+                    Войти
+                  </Button>
                 )}
               </div>
             </div>

@@ -12,8 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 
-const UserProfile: React.FC = () => {
-  const { user, logout, isAdmin } = useAuth();
+interface UserProfileProps {
+  onNavigateToProfile?: () => void;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ onNavigateToProfile }) => {
+  const { user, logout } = useAuth();
+  const isAdmin = user?.userType === 'admin';
 
   if (!user) return null;
 
@@ -24,7 +29,7 @@ const UserProfile: React.FC = () => {
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
             <Icon name="User" size={16} className="text-black" />
           </div>
-          <span className="font-medium">{user.username}</span>
+          <span className="font-medium">{user.fullName}</span>
           {isAdmin && (
             <Badge variant="secondary" className="bg-gold-100 text-gold-800 border-gold-200">
               <Icon name="Crown" size={12} className="mr-1" />
@@ -40,7 +45,7 @@ const UserProfile: React.FC = () => {
             <Icon name="User" size={12} className="text-black" />
           </div>
           <div>
-            <p className="font-medium">{user.username}</p>
+            <p className="font-medium">{user.fullName}</p>
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
@@ -52,7 +57,7 @@ const UserProfile: React.FC = () => {
           Настройки
         </DropdownMenuItem>
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={onNavigateToProfile}>
           <Icon name="User" size={16} className="mr-2" />
           Профиль
         </DropdownMenuItem>

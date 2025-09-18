@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Tournament, ActiveSection } from './types';
 import AuthStatus from '../auth/AuthStatus';
-import SystemStatus from '../SystemStatus';
+import AuthFixNotice from '../auth/AuthFixNotice';
 
 interface HomePageProps {
   upcomingTournaments: Tournament[];
@@ -22,9 +22,9 @@ const HomePage: React.FC<HomePageProps> = ({
 }) => {
   return (
     <div className="space-y-16">
-      {/* System Status */}
+      {/* Auth Fix Notice */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <SystemStatus />
+        <AuthFixNotice />
         <AuthStatus />
       </div>
 
