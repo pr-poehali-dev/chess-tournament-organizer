@@ -41,4 +41,4 @@ export interface NavigationItem {
 }
 
 export type PaymentStatus = 'pending' | 'processing' | 'success' | 'error';
-export type ActiveSection = 'home' | 'tournaments' | 'play' | 'results' | 'rewards' | 'about' | 'contacts' | 'profile';
+export type ActiveSection = 'home' | 'tournaments' | 'play' | 'results' | 'stats' | 'rewards' | 'about' | 'contacts' | 'profile';

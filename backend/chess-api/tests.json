@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "Get players list",
+      "method": "GET",
+      "path": "/players",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "players": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new player",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create_player",
+        "name": "Test Player",
+        "email": "test@example.com"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "player": "object"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get games list",
+      "method": "GET",
+      "path": "/games",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "games": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

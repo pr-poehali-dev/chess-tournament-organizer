@@ -13,6 +13,7 @@ import HomePage from '@/components/main-sections/HomePage';
 import TournamentsPage from '@/components/main-sections/TournamentsPage';
 import PlayPage from '@/components/main-sections/PlayPage';
 import ResultsPage from '@/components/main-sections/ResultsPage';
+import PlayerStats from '@/components/chess/PlayerStats';
 import RewardsShop from '@/components/main-sections/RewardsShop';
 import AboutPage from '@/components/main-sections/AboutPage';
 import ContactsPage from '@/components/main-sections/ContactsPage';
@@ -107,6 +108,7 @@ const Index = () => {
     { id: 'tournaments', label: 'Турниры', icon: 'Trophy' },
     { id: 'play', label: 'Игра', icon: 'Gamepad2' },
     { id: 'results', label: 'Результаты', icon: 'Award' },
+    { id: 'stats', label: 'Статистика', icon: 'BarChart3' },
     { id: 'rewards', label: 'Награды', icon: 'Medal' },
     { id: 'about', label: 'О центре', icon: 'Info' },
     { id: 'contacts', label: 'Контакты', icon: 'Phone' },
@@ -240,6 +242,8 @@ const Index = () => {
             onTournamentSelect={setSelectedTournament}
           />
         );
+      case 'stats':
+        return <PlayerStats />;
       case 'rewards':
         return (
           <RewardsShop
