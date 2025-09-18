@@ -6,6 +6,7 @@ export interface User {
   email: string;
   fullName: string;
   userType: 'child' | 'parent' | 'trainer' | 'admin';
+  role?: 'player' | 'moderator' | 'admin';
   playerId?: number;
 }
 

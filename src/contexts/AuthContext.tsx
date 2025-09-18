@@ -9,6 +9,8 @@ interface AuthContextType {
   register: (data: any) => Promise<boolean>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  isModerator: boolean;
+  hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,6 +75,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const hasRole = (role: string): boolean => {
+    if (!user) return false;
+    // Проверяем как поле role, так и userType для обратной совместимости
+    return user.role === role || user.userType === role;
+  };
+
   const value: AuthContextType = {
     user,
     isLoggedIn: !!user,
@@ -80,7 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     register,
     logout,
-    isAdmin: user?.userType === 'admin'
+    isAdmin: hasRole('admin'),
+    isModerator: hasRole('moderator'),
+    hasRole
   };
 
   return (

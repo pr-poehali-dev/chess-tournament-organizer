@@ -16,7 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onSectionChange, 
   navigationItems 
 }) => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isAdmin } = useAuth();
   return (
     <div>
       <nav className="bg-white shadow-sm border-b">
@@ -44,6 +44,21 @@ const Navigation: React.FC<NavigationProps> = ({
                   <span>{item.label}</span>
                 </button>
               ))}
+              
+              {/* Кнопка админ панели для администраторов */}
+              {isAdmin && (
+                <button
+                  onClick={() => onSectionChange('admin')}
+                  className={`flex items-center space-x-1 px-2 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                    activeSection === 'admin'
+                      ? 'text-red-600 border-b-2 border-red-600'
+                      : 'text-red-500 hover:text-red-700'
+                  }`}
+                >
+                  <Icon name="Settings" size={14} />
+                  <span>Админ</span>
+                </button>
+              )}
               
               <div className="ml-6 pl-6 border-l border-gray-200">
                 {isLoggedIn ? (

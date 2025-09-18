@@ -17,6 +17,7 @@ import RewardsShop from '@/components/main-sections/RewardsShop';
 import AboutPage from '@/components/main-sections/AboutPage';
 import ContactsPage from '@/components/main-sections/ContactsPage';
 import AuthPage from '@/components/main-sections/AuthPage';
+import AdminPanel from '@/components/admin/AdminPanel';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Типы
@@ -225,6 +226,8 @@ const Index = () => {
         return <ContactsPage />;
       case 'profile':
         return <AuthPage />;
+      case 'admin':
+        return <AdminPanel />;
       default:
         return <HomePage
           upcomingTournaments={upcomingTournaments}

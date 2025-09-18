@@ -7,12 +7,13 @@ const AuthFixNotice = () => {
         <Icon name="CheckCircle" className="text-green-500 mr-3 mt-0.5" size={20} />
         <div>
           <h3 className="font-semibold text-green-800 mb-2">
-            ✅ Кнопка "Войти" исправлена!
+            ✅ Создана администратор-панель!
           </h3>
           <div className="text-green-700 text-sm space-y-1">
-            <p>• <strong>Теперь:</strong> Кнопка "Войти" ведет в раздел "Регистрация" с новой формой авторизации</p>
-            <p>• <strong>Было:</strong> Открывалась старая форма авторизации по логину</p>
-            <p>• <strong>Авторизация:</strong> Только через email/пароль с сохранением в базе данных</p>
+            <p>• <strong>Администратор:</strong> логин "admin", пароль "7gp7yfwx"</p>
+            <p>• <strong>Панель администратора:</strong> управление пользователями и турнирами</p>
+            <p>• <strong>Роли:</strong> admin (администратор), moderator (модератор), player (игрок)</p>
+            <p>• <strong>Доступ:</strong> кнопка "Админ" появляется только у администраторов</p>
           </div>
         </div>
       </div>
