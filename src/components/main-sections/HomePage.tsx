@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Tournament, ActiveSection } from './types';
+import AuthStatus from '../auth/AuthStatus';
+import SystemStatus from '../SystemStatus';
 
 interface HomePageProps {
   upcomingTournaments: Tournament[];
@@ -20,6 +22,12 @@ const HomePage: React.FC<HomePageProps> = ({
 }) => {
   return (
     <div className="space-y-16">
+      {/* System Status */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <SystemStatus />
+        <AuthStatus />
+      </div>
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-white to-gray-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

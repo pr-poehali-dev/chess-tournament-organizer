@@ -12,7 +12,6 @@ import { useAuth } from '@/contexts/AuthContext';
 interface TournamentsPageProps {
   upcomingTournaments: Tournament[];
   selectedDate: Date | undefined;
-  isLoggedIn: boolean;
   userRole: string;
   onDateChange: (date: Date | undefined) => void;
   onTournamentRegistration: (tournament: Tournament) => void;
@@ -22,12 +21,12 @@ interface TournamentsPageProps {
 const TournamentsPage: React.FC<TournamentsPageProps> = ({
   upcomingTournaments,
   selectedDate,
-  isLoggedIn,
   userRole,
   onDateChange,
   onTournamentRegistration,
   onEnterTournamentRoom
 }) => {
+  const { isLoggedIn } = useAuth();
   const [showSwissDemo, setShowSwissDemo] = useState(false);
   const { isAdmin } = useAuth();
   return (

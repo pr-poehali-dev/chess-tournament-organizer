@@ -1,15 +1,4 @@
-export interface RegistrationData {
-  fullName: string;
-  dateOfBirth: string;
-  gender: 'male' | 'female';
-  fcrId: string;
-  educationalInstitution: string;
-  trainerName: string;
-  representativeEmail: string;
-  representativePhone: string;
-  userType: 'child' | 'parent' | 'trainer';
-  password: string;
-}
+
 
 export interface OrderForm {
   name: string;

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
-import { UserData } from '@/types/user';
 import TournamentRoom from '@/components/TournamentRoom';
 
 // Импорт компонентов секций
@@ -24,7 +23,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   Tournament, 
   NavigationItem, 
-  RegistrationData, 
   OrderForm, 
   PaymentStatus, 
   ActiveSection 
@@ -38,19 +36,7 @@ const Index = () => {
   const [userRole, setUserRole] = useState('participant');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  // Состояние регистрации
-  const [registrationData, setRegistrationData] = useState<RegistrationData>({
-    fullName: '',
-    dateOfBirth: '',
-    gender: 'male',
-    fcrId: '',
-    educationalInstitution: '',
-    trainerName: '',
-    representativeEmail: '',
-    representativePhone: '',
-    userType: 'child',
-    password: ''
-  });
+
 
   // Состояние турниров
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
@@ -202,7 +188,6 @@ const Index = () => {
           <TournamentsPage
             upcomingTournaments={upcomingTournaments}
             selectedDate={selectedDate}
-            isLoggedIn={isLoggedIn}
             userRole={userRole}
             onDateChange={setSelectedDate}
             onTournamentRegistration={handleTournamentRegistration}
