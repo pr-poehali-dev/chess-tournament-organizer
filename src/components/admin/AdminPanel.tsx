@@ -8,33 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
+import { adminApiService, AdminUser, AdminTournament, CreateTournamentData } from '@/services/adminApi';
+import { useToast } from '@/components/ui/use-toast';
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-  role: string;
-  user_type: string;
-  is_active: boolean;
-  created_at: string;
-  last_login?: string;
-}
-
-interface Tournament {
-  id: number;
-  name: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  location: string;
-  max_participants: number;
-  status: string;
-  tournament_type: string;
-  rounds: number;
-  entry_fee: number;
-  prize_fund: number;
-}
+// Используем интерфейсы из API сервиса
+type User = AdminUser;
+type Tournament = AdminTournament;
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -44,35 +23,42 @@ const AdminPanel = () => {
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [isEditingTournament, setIsEditingTournament] = useState(false);
   const [isCreatingTournament, setIsCreatingTournament] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   // Загрузка пользователей
   const loadUsers = async () => {
     try {
-      // TODO: заменить на реальный API вызов
-      setUsers([
-        {
-          id: 1,
-          username: 'admin',
-          email: 'admin@chess-tournament.org',
-          full_name: 'Администратор системы',
-          role: 'admin',
-          user_type: 'admin',
-          is_active: true,
-          created_at: '2024-01-01T10:00:00Z'
-        }
-      ]);
+      setLoading(true);
+      const usersData = await adminApiService.getUsers();
+      setUsers(usersData);
     } catch (error) {
       console.error('Ошибка загрузки пользователей:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось загрузить список пользователей',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   // Загрузка турниров
   const loadTournaments = async () => {
     try {
-      // TODO: заменить на реальный API вызов
-      setTournaments([]);
+      setLoading(true);
+      const tournamentsData = await adminApiService.getTournaments();
+      setTournaments(tournamentsData);
     } catch (error) {
       console.error('Ошибка загрузки турниров:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось загрузить список турниров',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,38 +70,47 @@ const AdminPanel = () => {
   // Обновление пользователя
   const updateUser = async (updatedUser: User) => {
     try {
-      // TODO: API вызов для обновления пользователя
-      setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+      setLoading(true);
+      const updated = await adminApiService.updateUser(updatedUser);
+      setUsers(users.map(u => u.id === updated.id ? updated : u));
       setIsEditingUser(false);
       setSelectedUser(null);
+      toast({
+        title: 'Успех',
+        description: 'Пользователь успешно обновлен'
+      });
     } catch (error) {
       console.error('Ошибка обновления пользователя:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось обновить пользователя',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   // Создание турнира
-  const createTournament = async (tournamentData: Partial<Tournament>) => {
+  const createTournament = async (tournamentData: CreateTournamentData) => {
     try {
-      // TODO: API вызов для создания турнира
-      const newTournament: Tournament = {
-        id: Date.now(),
-        name: tournamentData.name || '',
-        description: tournamentData.description || '',
-        start_date: tournamentData.start_date || '',
-        end_date: tournamentData.end_date || '',
-        location: tournamentData.location || '',
-        max_participants: tournamentData.max_participants || 100,
-        status: 'planned',
-        tournament_type: tournamentData.tournament_type || 'swiss',
-        rounds: tournamentData.rounds || 9,
-        entry_fee: tournamentData.entry_fee || 0,
-        prize_fund: tournamentData.prize_fund || 0
-      };
-      
-      setTournaments([...tournaments, newTournament]);
+      setLoading(true);
+      const newTournament = await adminApiService.createTournament(tournamentData);
+      setTournaments([newTournament, ...tournaments]);
       setIsCreatingTournament(false);
+      toast({
+        title: 'Успех',
+        description: 'Турнир успешно создан'
+      });
     } catch (error) {
       console.error('Ошибка создания турнира:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось создать турнир',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -281,8 +276,8 @@ const AdminPanel = () => {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-6">
-                    <Button onClick={() => updateUser(selectedUser)}>
-                      Сохранить изменения
+                    <Button onClick={() => updateUser(selectedUser)} disabled={loading}>
+                      {loading ? 'Сохранение...' : 'Сохранить изменения'}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -290,6 +285,7 @@ const AdminPanel = () => {
                         setIsEditingUser(false);
                         setSelectedUser(null);
                       }}
+                      disabled={loading}
                     >
                       Отмена
                     </Button>
@@ -372,6 +368,7 @@ const AdminPanel = () => {
                 onSubmit={createTournament}
                 onCancel={() => setIsCreatingTournament(false)}
                 title="Создание нового турнира"
+                loading={loading}
               />
             )}
 
@@ -379,19 +376,39 @@ const AdminPanel = () => {
             {isEditingTournament && selectedTournament && (
               <TournamentForm
                 tournament={selectedTournament}
-                onSubmit={(data) => {
-                  // TODO: обновление турнира
-                  setTournaments(tournaments.map(t => 
-                    t.id === selectedTournament.id ? { ...selectedTournament, ...data } : t
-                  ));
-                  setIsEditingTournament(false);
-                  setSelectedTournament(null);
+                onSubmit={async (data) => {
+                  try {
+                    setLoading(true);
+                    const updated = await adminApiService.updateTournament({
+                      ...data,
+                      id: selectedTournament.id
+                    });
+                    setTournaments(tournaments.map(t => 
+                      t.id === updated.id ? updated : t
+                    ));
+                    setIsEditingTournament(false);
+                    setSelectedTournament(null);
+                    toast({
+                      title: 'Успех',
+                      description: 'Турнир успешно обновлен'
+                    });
+                  } catch (error) {
+                    console.error('Ошибка обновления турнира:', error);
+                    toast({
+                      title: 'Ошибка',
+                      description: 'Не удалось обновить турнир',
+                      variant: 'destructive'
+                    });
+                  } finally {
+                    setLoading(false);
+                  }
                 }}
                 onCancel={() => {
                   setIsEditingTournament(false);
                   setSelectedTournament(null);
                 }}
                 title="Редактирование турнира"
+                loading={loading}
               />
             )}
           </div>
@@ -404,12 +421,13 @@ const AdminPanel = () => {
 // Компонент формы турнира
 interface TournamentFormProps {
   tournament?: Tournament;
-  onSubmit: (data: Partial<Tournament>) => void;
+  onSubmit: (data: CreateTournamentData) => void | Promise<void>;
   onCancel: () => void;
   title: string;
+  loading?: boolean;
 }
 
-const TournamentForm: React.FC<TournamentFormProps> = ({ tournament, onSubmit, onCancel, title }) => {
+const TournamentForm: React.FC<TournamentFormProps> = ({ tournament, onSubmit, onCancel, title, loading = false }) => {
   const [formData, setFormData] = useState({
     name: tournament?.name || '',
     description: tournament?.description || '',
@@ -539,10 +557,10 @@ const TournamentForm: React.FC<TournamentFormProps> = ({ tournament, onSubmit, o
             </div>
           </div>
           <div className="flex gap-2 pt-4">
-            <Button type="submit">
-              {tournament ? 'Сохранить изменения' : 'Создать турнир'}
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Обработка...' : (tournament ? 'Сохранить изменения' : 'Создать турнир')}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
               Отмена
             </Button>
           </div>

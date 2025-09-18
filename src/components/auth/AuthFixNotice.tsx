@@ -7,13 +7,13 @@ const AuthFixNotice = () => {
         <Icon name="CheckCircle" className="text-green-500 mr-3 mt-0.5" size={20} />
         <div>
           <h3 className="font-semibold text-green-800 mb-2">
-            ✅ Создана администратор-панель!
+            ✅ Backend API для админ-панели готов!
           </h3>
           <div className="text-green-700 text-sm space-y-1">
             <p>• <strong>Администратор:</strong> логин "admin", пароль "7gp7yfwx"</p>
-            <p>• <strong>Панель администратора:</strong> управление пользователями и турнирами</p>
-            <p>• <strong>Роли:</strong> admin (администратор), moderator (модератор), player (игрок)</p>
-            <p>• <strong>Доступ:</strong> кнопка "Админ" появляется только у администраторов</p>
+            <p>• <strong>API пользователей:</strong> просмотр, редактирование, деактивация</p>
+            <p>• <strong>API турниров:</strong> создание, редактирование, отмена турниров</p>
+            <p>• <strong>Безопасность:</strong> проверка токена сессии и прав администратора</p>
           </div>
         </div>
       </div>
