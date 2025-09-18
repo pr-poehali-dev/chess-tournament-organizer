@@ -17,7 +17,8 @@ import PlayerStats from '@/components/chess/PlayerStats';
 import RewardsShop from '@/components/main-sections/RewardsShop';
 import AboutPage from '@/components/main-sections/AboutPage';
 import ContactsPage from '@/components/main-sections/ContactsPage';
-import ProfilePage from '@/components/main-sections/ProfilePage';
+import AuthPage from '@/components/main-sections/AuthPage';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Типы
 import { 
@@ -30,12 +31,12 @@ import {
 } from '@/components/main-sections/types';
 
 const Index = () => {
+  const { isLoggedIn, user: currentUser } = useAuth();
+  
   // Основное состояние
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('participant');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
 
   // Состояние регистрации
   const [registrationData, setRegistrationData] = useState<RegistrationData>({
@@ -138,32 +139,7 @@ const Index = () => {
     }, 3000);
   };
 
-  const handleLogin = (userData: UserData) => {
-    setCurrentUser(userData);
-    setIsLoggedIn(true);
-  };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setIsLoggedIn(false);
-  };
-
-  const handleRegister = () => {
-    if (!registrationData.fullName || !registrationData.dateOfBirth) {
-      alert('Заполните обязательные поля');
-      return;
-    }
-    
-    const newUser: UserData = {
-      id: Date.now().toString(),
-      ...registrationData,
-      registrationDate: new Date().toISOString()
-    };
-    
-    setCurrentUser(newUser);
-    setIsLoggedIn(true);
-    alert('Регистрация успешна!');
-  };
 
   const enterTournamentRoom = (tournamentId: string) => {
     if (!isLoggedIn || !currentUser) {
@@ -263,17 +239,7 @@ const Index = () => {
       case 'contacts':
         return <ContactsPage />;
       case 'profile':
-        return (
-          <ProfilePage
-            isLoggedIn={isLoggedIn}
-            currentUser={currentUser}
-            registrationData={registrationData}
-            onLogin={handleLogin}
-            onRegistrationDataChange={setRegistrationData}
-            onRegister={handleRegister}
-            onLogout={handleLogout}
-          />
-        );
+        return <AuthPage />;
       default:
         return <HomePage
           upcomingTournaments={upcomingTournaments}

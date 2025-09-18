@@ -1,67 +1,86 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface User {
-  id: string;
-  username: string;
-  role: 'user' | 'admin';
-  email?: string;
-}
+import { authService, User } from '../services/authApi';
 
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (data: any) => Promise<boolean>;
+  logout: () => Promise<void>;
   isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: 'admin123',
-  user: {
-    id: 'admin-001',
-    username: 'admin',
-    role: 'admin' as const,
-    email: 'admin@chess-club.ru'
-  }
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('chess-club-user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem('chess-club-user');
-      }
-    }
+    // Проверяем сессию при загрузке приложения
+    checkCurrentSession();
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-      setUser(ADMIN_CREDENTIALS.user);
-      localStorage.setItem('chess-club-user', JSON.stringify(ADMIN_CREDENTIALS.user));
-      return true;
+  const checkCurrentSession = async () => {
+    try {
+      const result = await authService.checkSession();
+      if (result.authenticated && result.user) {
+        setUser(result.user);
+      }
+    } catch (error) {
+      console.error('Session check failed:', error);
+    } finally {
+      setIsLoading(false);
     }
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('chess-club-user');
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await authService.login({ email, password });
+      if (response.success && response.user) {
+        setUser(response.user);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login failed:', error);
+      return false;
+    }
+  };
+
+  const register = async (data: any): Promise<boolean> => {
+    try {
+      const response = await authService.register(data);
+      if (response.success && response.user) {
+        setUser(response.user);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Registration failed:', error);
+      return false;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await authService.logout();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setUser(null);
+    }
   };
 
   const value: AuthContextType = {
     user,
     isLoggedIn: !!user,
+    isLoading,
     login,
+    register,
     logout,
-    isAdmin: user?.role === 'admin'
+    isAdmin: user?.userType === 'admin'
   };
 
   return (

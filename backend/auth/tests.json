@@ -1,0 +1,50 @@
+{
+  "tests": [
+    {
+      "name": "Check session without token",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "authenticated": false
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Register new user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "register",
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "password123",
+        "fullName": "Test User",
+        "userType": "child"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "user": "object",
+        "sessionToken": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "login",
+        "email": "test@example.com",
+        "password": "password123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "user": "object"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
