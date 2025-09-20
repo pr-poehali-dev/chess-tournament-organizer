@@ -100,8 +100,15 @@ const AdminPanel = () => {
       setIsCreatingTournament(false);
       toast({
         title: 'Успех',
-        description: 'Турнир успешно создан'
+        description: 'Турнир успешно создан. Обновите страницу для отображения в основном списке.'
       });
+      
+      // Обновляем основной список турниров на главной странице
+      // Принудительно перезагружаем страницу через 2 секунды
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
     } catch (error) {
       console.error('Ошибка создания турнира:', error);
       toast({

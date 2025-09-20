@@ -67,6 +67,11 @@ const Index = () => {
     try {
       setLoading(true);
       const response = await fetch('https://functions.poehali.dev/0ea7af08-6a91-44d1-bee2-e83909110e5d');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
       
       if (data.tournaments) {
@@ -89,6 +94,8 @@ const Index = () => {
       }
     } catch (error) {
       console.error('Ошибка загрузки турниров:', error);
+      // Устанавливаем пустой массив при ошибке
+      setUpcomingTournaments([]);
     } finally {
       setLoading(false);
     }

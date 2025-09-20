@@ -1,17 +1,13 @@
 import json
 import os
-import psycopg2
-from datetime import datetime
-from typing import Dict, Any, List
 
-def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+def handler(event, context):
     '''
-    Business: Get tournaments from database with optional filtering
-    Args: event - dict with httpMethod, queryStringParameters
-          context - object with request_id attribute
+    Business: Get tournaments from database
+    Args: event, context
     Returns: HTTP response with tournaments list
     '''
-    method: str = event.get('httpMethod', 'GET')
+    method = event.get('httpMethod', 'GET')
     
     # Handle CORS OPTIONS request
     if method == 'OPTIONS':
@@ -36,42 +32,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': json.dumps({'error': 'Method not allowed'})
         }
     
-    # Get query parameters
-    params = event.get('queryStringParameters') or {}
-    status_filter = params.get('status')  # 'upcoming', 'ongoing', 'completed'
-    limit = int(params.get('limit', 10))
-    
     try:
+        import psycopg2
+        
         # Connect to database
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cursor = conn.cursor()
         
-        # Build query with filters using simple query protocol
+        # Query tournaments
+        cursor.execute('''
+            SELECT id, name, description, start_date, end_date, 
+                   max_participants, entry_fee, prize_fund, 
+                   tournament_type, status, location, created_at
+            FROM t_p67413675_chess_tournament_org.tournaments
+            ORDER BY start_date ASC 
+            LIMIT 10
+        ''')
         
-        # Use simple query protocol - no parameterized queries
-        if status_filter:
-            query = f'''
-                SELECT id, name, description, start_date, end_date, 
-                       max_participants, current_participants, entry_fee, 
-                       prize_fund, tournament_type, status, location, 
-                       created_at
-                FROM t_p67413675_chess_tournament_org.tournaments
-                WHERE status = '{status_filter}'
-                ORDER BY start_date ASC 
-                LIMIT {limit}
-            '''
-        else:
-            query = f'''
-                SELECT id, name, description, start_date, end_date, 
-                       max_participants, current_participants, entry_fee, 
-                       prize_fund, tournament_type, status, location, 
-                       created_at
-                FROM t_p67413675_chess_tournament_org.tournaments
-                ORDER BY start_date ASC 
-                LIMIT {limit}
-            '''
-        
-        cursor.execute(query)
         rows = cursor.fetchall()
         
         # Convert to list of dictionaries
@@ -84,13 +61,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'start_date': row[3].isoformat() if row[3] else None,
                 'end_date': row[4].isoformat() if row[4] else None,
                 'max_participants': row[5],
-                'current_participants': row[6],
-                'entry_fee': float(row[7]) if row[7] else 0,
-                'prize_fund': float(row[8]) if row[8] else 0,
-                'tournament_type': row[9],
-                'status': row[10],
-                'location': row[11],
-                'created_at': row[12].isoformat() if row[12] else None
+                'current_participants': 0,
+                'entry_fee': float(row[6]) if row[6] else 0,
+                'prize_fund': float(row[7]) if row[7] else 0,
+                'tournament_type': row[8],
+                'status': row[9],
+                'location': row[10],
+                'created_at': row[11].isoformat() if row[11] else None
             }
             tournaments.append(tournament)
         
