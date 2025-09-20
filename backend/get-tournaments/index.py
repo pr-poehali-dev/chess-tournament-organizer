@@ -53,9 +53,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             query = f'''
                 SELECT id, name, description, start_date, end_date, 
                        max_participants, current_participants, entry_fee, 
-                       prize_pool, tournament_type, status, location, 
+                       prize_fund, tournament_type, status, location, 
                        created_at
-                FROM tournaments
+                FROM t_p67413675_chess_tournament_org.tournaments
                 WHERE status = '{status_filter}'
                 ORDER BY start_date ASC 
                 LIMIT {limit}
@@ -64,9 +64,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             query = f'''
                 SELECT id, name, description, start_date, end_date, 
                        max_participants, current_participants, entry_fee, 
-                       prize_pool, tournament_type, status, location, 
+                       prize_fund, tournament_type, status, location, 
                        created_at
-                FROM tournaments
+                FROM t_p67413675_chess_tournament_org.tournaments
                 ORDER BY start_date ASC 
                 LIMIT {limit}
             '''
@@ -86,7 +86,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'max_participants': row[5],
                 'current_participants': row[6],
                 'entry_fee': float(row[7]) if row[7] else 0,
-                'prize_pool': float(row[8]) if row[8] else 0,
+                'prize_fund': float(row[8]) if row[8] else 0,
                 'tournament_type': row[9],
                 'status': row[10],
                 'location': row[11],

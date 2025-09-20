@@ -9,7 +9,7 @@ import json
 import os
 import psycopg2
 from typing import Dict, Any, List, Optional
-from psycopg2.extras import RealDictCursor
+
 from datetime import datetime, date
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -79,7 +79,7 @@ def get_db_connection():
     if not database_url:
         raise Exception('DATABASE_URL не настроен')
     
-    return psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+    return psycopg2.connect(database_url)
 
 def check_admin_rights(session_token: Optional[str]) -> Optional[Dict[str, Any]]:
     """Проверка прав администратора по токену сессии"""
@@ -103,8 +103,15 @@ def check_admin_rights(session_token: Optional[str]) -> Optional[Dict[str, Any]]
         conn.close()
         
         # Проверяем, что пользователь администратор или модератор
-        if user and user['role'] in ['admin', 'moderator']:
-            return dict(user)
+        if user and user[4] in ['admin', 'moderator']:  # role is at index 4
+            return {
+                'id': user[0],
+                'username': user[1], 
+                'email': user[2],
+                'full_name': user[3],
+                'role': user[4],
+                'user_type': user[5]
+            }
         
         return None
     except Exception:
@@ -143,15 +150,28 @@ def get_tournaments() -> Dict[str, Any]:
     cursor.close()
     conn.close()
     
-    # Преобразуем даты в строки для JSON
+    # Преобразуем данные из tuple в dict
     tournaments_list = []
-    for tournament in tournaments:
-        tournament_dict = dict(tournament)
-        for key, value in tournament_dict.items():
-            if isinstance(value, (datetime, date)):
-                tournament_dict[key] = value.isoformat()
-            elif value is None:
-                tournament_dict[key] = None
+    for row in tournaments:
+        tournament_dict = {
+            'id': row[0],
+            'name': row[1],
+            'description': row[2],
+            'start_date': row[3].isoformat() if row[3] else None,
+            'end_date': row[4].isoformat() if row[4] else None,
+            'location': row[5],
+            'max_participants': row[6],
+            'registration_deadline': row[7].isoformat() if row[7] else None,
+            'entry_fee': float(row[8]) if row[8] else 0,
+            'prize_fund': float(row[9]) if row[9] else 0,
+            'tournament_type': row[10],
+            'time_control': row[11],
+            'rounds': row[12],
+            'status': row[13],
+            'created_at': row[14].isoformat() if row[14] else None,
+            'updated_at': row[15].isoformat() if row[15] else None,
+            'created_by_name': row[16]
+        }
         tournaments_list.append(tournament_dict)
     
     return {
@@ -211,18 +231,45 @@ def create_tournament(data: Dict[str, Any], created_by: int) -> Dict[str, Any]:
     """
     
     cursor.execute(insert_query, tournament_data)
-    new_tournament = cursor.fetchone()
-    
+    result = cursor.fetchone()
     conn.commit()
+    
+    # Получаем полную информацию о созданном турнире
+    cursor.execute("""
+        SELECT 
+            t.id, t.name, t.description, t.start_date, t.end_date, t.location,
+            t.max_participants, t.registration_deadline, t.entry_fee, t.prize_fund,
+            t.tournament_type, t.time_control, t.rounds, t.status, t.created_at, t.updated_at,
+            u.full_name as created_by_name
+        FROM t_p67413675_chess_tournament_org.tournaments t
+        LEFT JOIN t_p67413675_chess_tournament_org.users u ON t.created_by = u.id
+        WHERE t.id = %s
+    """, (result[0],))
+    
+    new_tournament = cursor.fetchone()
     cursor.close()
     conn.close()
     
     if new_tournament:
-        tournament_dict = dict(new_tournament)
-        # Преобразуем даты в строки
-        for key, value in tournament_dict.items():
-            if isinstance(value, (datetime, date)):
-                tournament_dict[key] = value.isoformat()
+        tournament_dict = {
+            'id': new_tournament[0],
+            'name': new_tournament[1],
+            'description': new_tournament[2],
+            'start_date': new_tournament[3].isoformat() if new_tournament[3] else None,
+            'end_date': new_tournament[4].isoformat() if new_tournament[4] else None,
+            'location': new_tournament[5],
+            'max_participants': new_tournament[6],
+            'registration_deadline': new_tournament[7].isoformat() if new_tournament[7] else None,
+            'entry_fee': float(new_tournament[8]) if new_tournament[8] else 0,
+            'prize_fund': float(new_tournament[9]) if new_tournament[9] else 0,
+            'tournament_type': new_tournament[10],
+            'time_control': new_tournament[11],
+            'rounds': new_tournament[12],
+            'status': new_tournament[13],
+            'created_at': new_tournament[14].isoformat() if new_tournament[14] else None,
+            'updated_at': new_tournament[15].isoformat() if new_tournament[15] else None,
+            'created_by_name': new_tournament[16]
+        }
         
         return {
             'statusCode': 201,
@@ -305,11 +352,12 @@ def update_tournament(data: Dict[str, Any]) -> Dict[str, Any]:
     conn.close()
     
     if updated_tournament:
-        tournament_dict = dict(updated_tournament)
-        # Преобразуем даты в строки
-        for key, value in tournament_dict.items():
-            if isinstance(value, (datetime, date)):
-                tournament_dict[key] = value.isoformat()
+        tournament_dict = {
+            'id': updated_tournament[0],
+            'name': updated_tournament[1],
+            'status': updated_tournament[2],
+            'updated_at': updated_tournament[3].isoformat() if updated_tournament[3] else None
+        }
         
         return {
             'statusCode': 200,
@@ -349,7 +397,7 @@ def delete_tournament(tournament_id: int) -> Dict[str, Any]:
         }
     
     # Запрещаем удаление активных турниров
-    if tournament['status'] == 'active':
+    if tournament[2] == 'active':  # status is at index 2
         cursor.close()
         conn.close()
         return {
@@ -374,6 +422,6 @@ def delete_tournament(tournament_id: int) -> Dict[str, Any]:
         'headers': {'Access-Control-Allow-Origin': '*'},
         'body': json.dumps({
             'success': True,
-            'message': f'Турнир "{tournament["name"]}" отменен'
+            'message': f'Турнир "{tournament[1]}" отменен'  # name is at index 1
         })
     }

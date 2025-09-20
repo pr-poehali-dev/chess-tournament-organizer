@@ -79,7 +79,7 @@ const Index = () => {
           participants: t.current_participants || 0,
           maxParticipants: t.max_participants || 0,
           entryFee: t.entry_fee || 0,
-          prizePool: t.prize_pool || 0,
+          prizePool: t.prize_fund || 0,
           timeControl: '15+10', // По умолчанию
           format: t.tournament_type || 'Швейцарская система',
           location: t.location || 'Онлайн',
