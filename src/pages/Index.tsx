@@ -73,7 +73,6 @@ const Index = () => {
       }
       
       const data = await response.json();
-      console.log('API Response:', data); // Логирование для отладки
       
       if (data.tournaments) {
         // Преобразуем данные из БД в формат Tournament
@@ -96,7 +95,7 @@ const Index = () => {
           const maxParticipants = t.max_participants || 100;
           const currentParticipants = Math.floor(Math.random() * maxParticipants * 0.7);
 
-          return {
+          const tournament = {
             id: t.id.toString(),
             title: t.name || 'Турнир',
             description: t.description || 'Описание турнира будет добавлено позже',
@@ -111,7 +110,7 @@ const Index = () => {
             maxParticipants,
             entryFee: t.entry_fee || 0,
             timeControl: t.time_control || '90+30',
-            ageCategory: t.age_category || 'до 12 лет',
+            ageCategory: t.age_category || 'открытая',
             format,
             status,
             // Дополнительные поля из админ-панели
@@ -125,6 +124,8 @@ const Index = () => {
             rules: 'Стандартные правила ФИДЕ. Контроль времени: ' + (t.time_control || '90+30'),
             contactInfo: 'info@chess-world.ru, +7 (495) 123-45-67'
           };
+          
+          return tournament;
         });
         
         // Фильтруем только предстоящие и активные турниры для пользователей
