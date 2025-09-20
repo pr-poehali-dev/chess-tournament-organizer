@@ -12,6 +12,12 @@ export interface Tournament {
   start_time_msk: string;
   rounds: number;
   status: string;
+  // Статистика
+  participants_count?: number;
+  registered_count?: number;
+  completed_rounds?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateTournamentData {
