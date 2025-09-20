@@ -27,14 +27,13 @@ export interface AdminTournament {
   name: string;
   description: string;
   start_date: string;
-  end_date: string;
-  location: string;
   max_participants: number;
   registration_deadline?: string;
   entry_fee: number;
-  prize_fund: number;
   tournament_type: 'swiss' | 'round_robin' | 'knockout' | 'arena';
   time_control: string;
+  age_category: string;
+  start_time_msk: string;
   rounds: number;
   status: 'planned' | 'registration' | 'active' | 'completed' | 'cancelled';
   created_at: string;
@@ -46,14 +45,13 @@ export interface CreateTournamentData {
   name: string;
   description?: string;
   start_date: string;
-  end_date: string;
-  location?: string;
   max_participants?: number;
   registration_deadline?: string;
   entry_fee?: number;
-  prize_fund?: number;
   tournament_type?: 'swiss' | 'round_robin' | 'knockout' | 'arena';
   time_control?: string;
+  age_category?: string;
+  start_time_msk?: string;
   rounds?: number;
   status?: 'planned' | 'registration' | 'active' | 'completed' | 'cancelled';
 }

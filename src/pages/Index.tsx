@@ -81,13 +81,13 @@ const Index = () => {
           title: t.name,
           description: t.description || '',
           date: new Date(t.start_date).toLocaleDateString('ru-RU'),
+          time: t.start_time_msk || '10:00',
           participants: t.current_participants || 0,
           maxParticipants: t.max_participants || 0,
           entryFee: t.entry_fee || 0,
-          prizePool: t.prize_fund || 0,
-          timeControl: '15+10', // По умолчанию
+          timeControl: t.time_control || '90+30',
+          ageCategory: t.age_category || 'открытая',
           format: t.tournament_type || 'Швейцарская система',
-          location: t.location || 'Онлайн',
           status: t.status as 'upcoming' | 'active' | 'completed'
         }));
         setUpcomingTournaments(tournaments);

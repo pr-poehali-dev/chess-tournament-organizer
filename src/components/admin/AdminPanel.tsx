@@ -18,12 +18,12 @@ interface Tournament {
   name: string;
   description: string;
   start_date: string;
-  end_date: string;
-  location: string;
   max_participants: number;
   entry_fee: number;
-  prize_fund: number;
   tournament_type: string;
+  time_control: string;
+  age_category: string;
+  start_time_msk: string;
   rounds: number;
   status: string;
 }
@@ -32,12 +32,12 @@ interface CreateTournamentData {
   name: string;
   description?: string;
   start_date: string;
-  end_date: string;
-  location?: string;
   max_participants?: number;
   entry_fee?: number;
-  prize_fund?: number;
   tournament_type?: string;
+  time_control?: string;
+  age_category?: string;
+  start_time_msk?: string;
   rounds?: number;
 }
 
@@ -456,9 +456,14 @@ const AdminPanel = () => {
                             {tournament.description}
                           </p>
                           <p className="text-xs text-gray-500">
-                            <strong>Даты:</strong> {new Date(tournament.start_date).toLocaleDateString('ru-RU')} - {new Date(tournament.end_date).toLocaleDateString('ru-RU')} |
-                            <strong> Место:</strong> {tournament.location} |
-                            <strong> Участники:</strong> {tournament.max_participants}
+                            <strong>Дата:</strong> {new Date(tournament.start_date).toLocaleDateString('ru-RU')} в {tournament.start_time_msk} МСК |
+                            <strong> Контроль времени:</strong> {tournament.time_control} |
+                            <strong> Возраст:</strong> {tournament.age_category}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            <strong>Участники:</strong> {tournament.max_participants} |
+                            <strong> Туры:</strong> {tournament.rounds} |
+                            <strong> Взнос:</strong> {tournament.entry_fee} руб.
                           </p>
                         </div>
                         <Button
@@ -549,13 +554,13 @@ const TournamentForm: React.FC<TournamentFormProps> = ({ tournament, onSubmit, o
     name: tournament?.name || '',
     description: tournament?.description || '',
     start_date: tournament?.start_date || '',
-    end_date: tournament?.end_date || '',
-    location: tournament?.location || '',
     max_participants: tournament?.max_participants || 100,
     tournament_type: tournament?.tournament_type || 'swiss',
+    time_control: tournament?.time_control || '90+30',
+    age_category: tournament?.age_category || 'до 12 лет',
+    start_time_msk: tournament?.start_time_msk || '10:00',
     rounds: tournament?.rounds || 9,
-    entry_fee: tournament?.entry_fee || 0,
-    prize_fund: tournament?.prize_fund || 0
+    entry_fee: tournament?.entry_fee || 0
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -600,22 +605,34 @@ const TournamentForm: React.FC<TournamentFormProps> = ({ tournament, onSubmit, o
               />
             </div>
             <div>
-              <Label htmlFor="end_date">Дата окончания</Label>
+              <Label htmlFor="start_time_msk">Время начала (МСК)</Label>
               <Input
-                id="end_date"
-                type="date"
-                value={formData.end_date}
-                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                id="start_time_msk"
+                type="time"
+                value={formData.start_time_msk}
+                onChange={(e) => setFormData({ ...formData, start_time_msk: e.target.value })}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="location">Место проведения</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
+              <Label htmlFor="time_control">Контроль времени</Label>
+              <Select
+                value={formData.time_control}
+                onValueChange={(value) => setFormData({ ...formData, time_control: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="90+30">90 мин + 30 сек/ход</SelectItem>
+                  <SelectItem value="60+10">60 мин + 10 сек/ход</SelectItem>
+                  <SelectItem value="30+5">30 мин + 5 сек/ход</SelectItem>
+                  <SelectItem value="15+10">15 мин + 10 сек/ход</SelectItem>
+                  <SelectItem value="10+5">10 мин + 5 сек/ход</SelectItem>
+                  <SelectItem value="5+3">5 мин + 3 сек/ход</SelectItem>
+                  <SelectItem value="3+2">3 мин + 2 сек/ход</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="max_participants">Макс. участников</Label>
@@ -663,14 +680,25 @@ const TournamentForm: React.FC<TournamentFormProps> = ({ tournament, onSubmit, o
               />
             </div>
             <div>
-              <Label htmlFor="prize_fund">Призовой фонд (руб.)</Label>
-              <Input
-                id="prize_fund"
-                type="number"
-                step="0.01"
-                value={formData.prize_fund}
-                onChange={(e) => setFormData({ ...formData, prize_fund: parseFloat(e.target.value) })}
-              />
+              <Label htmlFor="age_category">Возрастная категория</Label>
+              <Select
+                value={formData.age_category}
+                onValueChange={(value) => setFormData({ ...formData, age_category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="до 8 лет">до 8 лет</SelectItem>
+                  <SelectItem value="до 10 лет">до 10 лет</SelectItem>
+                  <SelectItem value="до 12 лет">до 12 лет</SelectItem>
+                  <SelectItem value="до 14 лет">до 14 лет</SelectItem>
+                  <SelectItem value="до 16 лет">до 16 лет</SelectItem>
+                  <SelectItem value="до 18 лет">до 18 лет</SelectItem>
+                  <SelectItem value="взрослые">взрослые</SelectItem>
+                  <SelectItem value="открытая">открытая</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex gap-2 pt-4">

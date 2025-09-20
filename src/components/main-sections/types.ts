@@ -12,15 +12,15 @@ export interface Tournament {
   id: string;
   title: string;
   date: string;
+  time: string;
   description: string;
   participants: number;
   maxParticipants: number;
   entryFee: number;
   timeControl: string;
+  ageCategory: string;
   format: string;
-  location: string;
   status: 'upcoming' | 'active' | 'finished';
-  prizePool: number;
 }
 
 export interface NavigationItem {

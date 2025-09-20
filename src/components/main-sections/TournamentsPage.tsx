@@ -79,7 +79,7 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center text-gray-600">
                         <Icon name="Calendar" size={14} className="mr-1" />
-                        {tournament.date}
+                        {tournament.date} в {tournament.time}
                       </div>
                       <div className="flex items-center text-gray-600">
                         <Icon name="Clock" size={14} className="mr-1" />
@@ -90,8 +90,8 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
                         {tournament.participants}/{tournament.maxParticipants}
                       </div>
                       <div className="flex items-center text-gray-600">
-                        <Icon name="Trophy" size={14} className="mr-1" />
-                        {tournament.prizePool}₽
+                        <Icon name="Baby" size={14} className="mr-1" />
+                        {tournament.ageCategory}
                       </div>
                     </div>
                     
