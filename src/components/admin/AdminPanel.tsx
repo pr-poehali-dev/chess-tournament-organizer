@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { authService, type User } from '@/services/authApi';
+import { adminApiService, type CreateTournamentData } from '@/services/adminApi';
 import { useToast } from '@/components/ui/use-toast';
 
 // Создаем локальные типы для турниров  
@@ -88,8 +89,8 @@ const AdminPanel = () => {
   const loadTournaments = async () => {
     try {
       setLoading(true);
-      // Пока используем пустой массив, так как фокус на пользователях
-      setTournaments([]);
+      const tournamentsData = await adminApiService.getTournaments();
+      setTournaments(tournamentsData);
     } catch (error) {
       console.error('Ошибка загрузки турниров:', error);
       toast({
@@ -139,13 +140,18 @@ const AdminPanel = () => {
   const createTournament = async (tournamentData: CreateTournamentData) => {
     try {
       setLoading(true);
-      // Турниры пока не поддерживаются в authService
-      throw new Error('Создание турниров пока не поддерживается');
+      const newTournament = await adminApiService.createTournament(tournamentData);
+      setTournaments([newTournament, ...tournaments]);
+      setIsCreatingTournament(false);
+      toast({
+        title: 'Успех',
+        description: 'Турнир успешно создан'
+      });
     } catch (error) {
       console.error('Ошибка создания турнира:', error);
       toast({
         title: 'Ошибка',
-        description: 'Создание турниров пока не поддерживается',
+        description: 'Не удалось создать турнир',
         variant: 'destructive'
       });
     } finally {
@@ -490,12 +496,10 @@ const AdminPanel = () => {
                 onSubmit={async (data) => {
                   try {
                     setLoading(true);
-                    // Турниры пока не поддерживаются в authService
-                    // const updated = await authService.updateTournament({
-                    //   ...data,
-                    //   id: selectedTournament.id
-                    // });
-                    throw new Error('Редактирование турниров пока не поддерживается');
+                    const updated = await adminApiService.updateTournament({
+                      ...data,
+                      id: selectedTournament.id
+                    });
                     setTournaments(tournaments.map(t => 
                       t.id === updated.id ? updated : t
                     ));

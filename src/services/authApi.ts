@@ -196,6 +196,11 @@ class AuthService {
       }),
     });
 
+    // Если ответ - просто массив пользователей
+    if (Array.isArray(response)) {
+      return response;
+    }
+
     if (!response.success) {
       throw new Error(response.error || 'Ошибка получения списка пользователей');
     }
