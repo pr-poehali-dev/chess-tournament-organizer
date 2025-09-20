@@ -7,12 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Icon from '@/components/ui/icon';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthDemo from '../auth/AuthDemo';
+import ProfilePage from '../ProfilePage';
+import ProfileEdit from '../ProfileEdit';
+import AdminPanel from '../admin/AdminPanel';
 
 const AuthPage = () => {
   const { login, register, user, logout, isLoggedIn, isLoading } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState<'profile' | 'edit' | 'admin'>('profile');
 
   // Состояние для входа
   const [loginData, setLoginData] = useState({
@@ -114,6 +118,22 @@ const AuthPage = () => {
   }
 
   if (isLoggedIn && user) {
+    // Проверяем режим отображения
+    if (viewMode === 'edit') {
+      return (
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <ProfileEdit
+            onCancel={() => setViewMode('profile')}
+            onSave={() => setViewMode('profile')}
+          />
+        </div>
+      );
+    }
+
+    if (viewMode === 'admin' && user.userType === 'admin') {
+      return <AdminPanel />;
+    }
+
     // Личный кабинет авторизованного пользователя
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -121,10 +141,22 @@ const AuthPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">
             Личный кабинет
           </h1>
-          <Button onClick={handleLogout} variant="outline">
-            <Icon name="LogOut" className="mr-2" size={16} />
-            Выйти
-          </Button>
+          <div className="flex gap-2">
+            {user.userType === 'admin' && (
+              <Button onClick={() => setViewMode('admin')} variant="secondary">
+                <Icon name="Shield" className="mr-2" size={16} />
+                Админ-панель
+              </Button>
+            )}
+            <Button onClick={() => setViewMode('edit')} variant="outline">
+              <Icon name="Edit" className="mr-2" size={16} />
+              Редактировать
+            </Button>
+            <Button onClick={handleLogout} variant="outline">
+              <Icon name="LogOut" className="mr-2" size={16} />
+              Выйти
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-6">

@@ -26,6 +26,21 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Вычисление возраста
+  const calculateAge = (birthDate: string) => {
+    if (!birthDate) return null;
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age >= 0 ? age : null;
+  };
+
   // Загрузка пользователей
   const loadUsers = async () => {
     try {
@@ -188,7 +203,16 @@ const AdminPanel = () => {
                           <strong>Email:</strong> {user.email} | 
                           <strong> Логин:</strong> {user.username} |
                           <strong> Тип:</strong> {user.user_type}
+                          {user.birth_date && <><strong> | Возраст:</strong> {calculateAge(user.birth_date)} лет</>}
+                          {user.fsr_id && <><strong> | ФШР ID:</strong> {user.fsr_id}</>}
                         </p>
+                        {(user.coach || user.educational_institution) && (
+                          <p className="text-sm text-gray-500">
+                            {user.coach && <><strong>Тренер:</strong> {user.coach}</>}
+                            {user.coach && user.educational_institution && ' | '}
+                            {user.educational_institution && <><strong>Учреждение:</strong> {user.educational_institution}</>}
+                          </p>
+                        )}
                         <p className="text-xs text-gray-500">
                           Создан: {new Date(user.created_at).toLocaleDateString('ru-RU')}
                           {user.last_login && ` | Последний вход: ${new Date(user.last_login).toLocaleDateString('ru-RU')}`}
@@ -243,6 +267,70 @@ const AdminPanel = () => {
                       />
                     </div>
                     <div>
+                      <Label htmlFor="username">Логин</Label>
+                      <Input
+                        id="username"
+                        value={selectedUser.username}
+                        onChange={(e) => setSelectedUser({
+                          ...selectedUser,
+                          username: e.target.value
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="birthDate">Дата рождения</Label>
+                      <Input
+                        id="birthDate"
+                        type="date"
+                        value={selectedUser.birth_date || ''}
+                        onChange={(e) => setSelectedUser({
+                          ...selectedUser,
+                          birth_date: e.target.value
+                        })}
+                      />
+                      {selectedUser.birth_date && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Возраст: {calculateAge(selectedUser.birth_date)} лет
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="fsrId">ID ФШР</Label>
+                      <Input
+                        id="fsrId"
+                        value={selectedUser.fsr_id || ''}
+                        onChange={(e) => setSelectedUser({
+                          ...selectedUser,
+                          fsr_id: e.target.value
+                        })}
+                        placeholder="Введите ID Федерации шахмат России"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="coach">Тренер</Label>
+                      <Input
+                        id="coach"
+                        value={selectedUser.coach || ''}
+                        onChange={(e) => setSelectedUser({
+                          ...selectedUser,
+                          coach: e.target.value
+                        })}
+                        placeholder="ФИО тренера"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="educationalInstitution">Учебное заведение</Label>
+                      <Input
+                        id="educationalInstitution"
+                        value={selectedUser.educational_institution || ''}
+                        onChange={(e) => setSelectedUser({
+                          ...selectedUser,
+                          educational_institution: e.target.value
+                        })}
+                        placeholder="Название учебного заведения"
+                      />
+                    </div>
+                    <div>
                       <Label htmlFor="role">Роль</Label>
                       <Select
                         value={selectedUser.role}
@@ -274,9 +362,9 @@ const AdminPanel = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="youth">Молодежь</SelectItem>
-                          <SelectItem value="adult">Взрослый</SelectItem>
-                          <SelectItem value="senior">Ветеран</SelectItem>
+                          <SelectItem value="child">Ребенок</SelectItem>
+                          <SelectItem value="parent">Родитель</SelectItem>
+                          <SelectItem value="trainer">Тренер</SelectItem>
                           <SelectItem value="admin">Администратор</SelectItem>
                         </SelectContent>
                       </Select>

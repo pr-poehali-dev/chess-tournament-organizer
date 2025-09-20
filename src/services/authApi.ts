@@ -149,6 +149,82 @@ class AuthService {
     return this.sessionToken;
   }
 
+  // Обновление профиля пользователя
+  async updateProfile(profileData: Partial<User>): Promise<{ success: boolean; user?: User; error?: string }> {
+    try {
+      const response = await this.makeRequest('/', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateProfile',
+          ...profileData,
+        }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Ошибка обновления профиля' 
+      };
+    }
+  }
+
+  // Получение данных пользователя по ID (для админов)
+  async getUserById(userId: number): Promise<User> {
+    const response = await this.makeRequest('/', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'getUserById',
+        userId,
+      }),
+    });
+
+    if (!response.success) {
+      throw new Error(response.error || 'Ошибка получения данных пользователя');
+    }
+
+    return response.user;
+  }
+
+  // Получение списка всех пользователей (для админов)
+  async getAllUsers(): Promise<User[]> {
+    const response = await this.makeRequest('/', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'getAllUsers',
+      }),
+    });
+
+    if (!response.success) {
+      throw new Error(response.error || 'Ошибка получения списка пользователей');
+    }
+
+    return response.users;
+  }
+
+  // Обновление данных любого пользователя (для админов)
+  async updateUserById(userId: number, profileData: Partial<User>): Promise<{ success: boolean; user?: User; error?: string }> {
+    try {
+      const response = await this.makeRequest('/', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateUserById',
+          userId,
+          ...profileData,
+        }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('User update error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Ошибка обновления пользователя' 
+      };
+    }
+  }
+
   // Проверка, авторизован ли пользователь
   isAuthenticated(): boolean {
     return this.sessionToken !== null;
