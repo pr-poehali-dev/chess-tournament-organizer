@@ -21,6 +21,16 @@ export interface Tournament {
   ageCategory: string;
   format: string;
   status: 'upcoming' | 'active' | 'finished';
+  // Дополнительная информация
+  rounds?: number;
+  registrationDeadline?: string;
+  location?: string;
+  startTime?: string;
+  tournamentType?: string;
+  prizePool?: number;
+  organizer?: string;
+  rules?: string;
+  contactInfo?: string;
 }
 
 export interface NavigationItem {

@@ -56,51 +56,152 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
               <p className="text-gray-500">В настоящее время нет доступных турниров</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               {upcomingTournaments.map((tournament) => (
-              <Card key={tournament.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-heading">{tournament.title}</CardTitle>
-                    <Badge 
-                      variant={tournament.status === 'upcoming' ? 'default' : 'secondary'}
-                      className={tournament.status === 'upcoming' ? 'bg-primary text-black' : ''}
-                    >
-                      {tournament.status === 'upcoming' ? 'Открыт' : 
-                       tournament.status === 'active' ? 'Идёт' : 'Завершён'}
-                    </Badge>
+              <Card key={tournament.id} className="hover:shadow-lg transition-shadow bg-white">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <CardTitle className="text-xl font-heading text-gray-900">{tournament.title}</CardTitle>
+                        <Badge 
+                          variant={tournament.status === 'upcoming' ? 'default' : 'secondary'}
+                          className={tournament.status === 'upcoming' ? 'bg-primary text-black' : 
+                                   tournament.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                        >
+                          {tournament.status === 'upcoming' ? 'Регистрация открыта' : 
+                           tournament.status === 'active' ? 'Турнир идёт' : 'Завершён'}
+                        </Badge>
+                      </div>
+                      {tournament.description && (
+                        <CardDescription className="font-body text-gray-600 leading-relaxed">
+                          {tournament.description}
+                        </CardDescription>
+                      )}
+                    </div>
                   </div>
-                  <CardDescription className="font-body">
-                    {tournament.description}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <Icon name="Calendar" size={14} className="mr-1" />
-                        {tournament.date} в {tournament.time}
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Icon name="Clock" size={14} className="mr-1" />
-                        {tournament.timeControl}
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Icon name="Users" size={14} className="mr-1" />
-                        {tournament.participants}/{tournament.maxParticipants}
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Icon name="Baby" size={14} className="mr-1" />
-                        {tournament.ageCategory}
+                  <div className="grid md:grid-cols-3 gap-6 mb-6">
+                    {/* Дата и время */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                        <Icon name="Calendar" size={16} className="text-primary" />
+                        Дата и время
+                      </h4>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Icon name="CalendarDays" size={14} />
+                          <span><strong>Дата:</strong> {tournament.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="Clock" size={14} />
+                          <span><strong>Время:</strong> {tournament.time}</span>
+                        </div>
+                        {tournament.registrationDeadline && (
+                          <div className="flex items-center gap-2">
+                            <Icon name="AlertCircle" size={14} />
+                            <span><strong>Регистрация до:</strong> {tournament.registrationDeadline}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    
-                    <div className="pt-3 border-t">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-600">Взнос:</span>
-                        <span className="font-semibold text-primary">{tournament.entryFee}₽</span>
+
+                    {/* Формат и правила */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                        <Icon name="Settings" size={16} className="text-primary" />
+                        Формат турнира
+                      </h4>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Icon name="Gamepad2" size={14} />
+                          <span><strong>Система:</strong> {tournament.format || tournament.tournamentType || 'Швейцарская'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="Timer" size={14} />
+                          <span><strong>Контроль времени:</strong> {tournament.timeControl}</span>
+                        </div>
+                        {tournament.rounds && (
+                          <div className="flex items-center gap-2">
+                            <Icon name="RotateCcw" size={14} />
+                            <span><strong>Количество туров:</strong> {tournament.rounds}</span>
+                          </div>
+                        )}
                       </div>
-                      
+                    </div>
+
+                    {/* Участники и категории */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                        <Icon name="Users" size={16} className="text-primary" />
+                        Участники
+                      </h4>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Icon name="UserCheck" size={14} />
+                          <div className="flex items-center gap-2">
+                            <span><strong>Зарегистрировано:</strong></span>
+                            <Badge variant="secondary" className="text-xs">
+                              {tournament.participants}/{tournament.maxParticipants}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="Baby" size={14} />
+                          <span><strong>Возрастная категория:</strong> {tournament.ageCategory}</span>
+                        </div>
+                        {tournament.location && (
+                          <div className="flex items-center gap-2">
+                            <Icon name="MapPin" size={14} />
+                            <span><strong>Место:</strong> {tournament.location}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Заполненность турнира */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Заполненность турнира</span>
+                      <span className="text-sm text-gray-600">
+                        {Math.round((tournament.participants / tournament.maxParticipants) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all duration-300" 
+                        style={{
+                          width: `${Math.min(100, (tournament.participants / tournament.maxParticipants) * 100)}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Финансовая информация и действия */}
+                  <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Взнос:</span>
+                        <span className="font-semibold text-lg text-primary">
+                          {tournament.entryFee > 0 ? `${tournament.entryFee}₽` : 'Бесплатно'}
+                        </span>
+                      </div>
+                      {tournament.prizePool && tournament.prizePool > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Призовой фонд:</span>
+                          <span className="font-semibold text-green-600">{tournament.prizePool.toLocaleString('ru-RU')}₽</span>
+                        </div>
+                      )}
+                      {tournament.organizer && (
+                        <div className="text-xs text-gray-500">
+                          <strong>Организатор:</strong> {tournament.organizer}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col justify-end">
                       {tournament.status === 'active' ? (
                         <Button 
                           className="w-full bg-green-600 hover:bg-green-700 text-white"
@@ -110,20 +211,61 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
                           Войти в турнир
                         </Button>
                       ) : tournament.status === 'upcoming' ? (
-                        <Button 
-                          className="w-full bg-primary hover:bg-gold-600 text-black"
-                          onClick={() => onTournamentRegistration(tournament)}
-                        >
-                          <Icon name="UserPlus" size={16} className="mr-2" />
-                          Зарегистрироваться
-                        </Button>
+                        <>
+                          {tournament.participants >= tournament.maxParticipants ? (
+                            <Button className="w-full" disabled>
+                              <Icon name="UserX" size={16} className="mr-2" />
+                              Мест нет
+                            </Button>
+                          ) : (
+                            <Button 
+                              className="w-full bg-primary hover:bg-gold-600 text-black"
+                              onClick={() => onTournamentRegistration(tournament)}
+                            >
+                              <Icon name="UserPlus" size={16} className="mr-2" />
+                              Зарегистрироваться
+                            </Button>
+                          )}
+                        </>
                       ) : (
                         <Button className="w-full" disabled>
+                          <Icon name="Trophy" size={16} className="mr-2" />
                           Турнир завершён
                         </Button>
                       )}
+                      
+                      {tournament.participants < 8 && tournament.status === 'upcoming' && (
+                        <p className="text-xs text-orange-600 mt-2 text-center">
+                          ⚠️ Нужно минимум 8 участников для проведения турнира
+                        </p>
+                      )}
                     </div>
                   </div>
+
+                  {/* Дополнительная информация */}
+                  {(tournament.rules || tournament.contactInfo) && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <details className="group">
+                        <summary className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 hover:text-primary">
+                          <Icon name="Info" size={14} />
+                          Дополнительная информация
+                          <Icon name="ChevronDown" size={14} className="group-open:rotate-180 transition-transform" />
+                        </summary>
+                        <div className="mt-3 space-y-2 text-sm text-gray-600">
+                          {tournament.rules && (
+                            <div>
+                              <strong>Правила:</strong> {tournament.rules}
+                            </div>
+                          )}
+                          {tournament.contactInfo && (
+                            <div>
+                              <strong>Контакты:</strong> {tournament.contactInfo}
+                            </div>
+                          )}
+                        </div>
+                      </details>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               ))}
