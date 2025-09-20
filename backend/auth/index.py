@@ -103,6 +103,117 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'body': json.dumps(users_list)
                 }
+            
+            elif action == 'updateUserById':
+                # Обновление данных любого пользователя (для админов)
+                if not session_token:
+                    return {
+                        'statusCode': 401,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'Необходима авторизация'})
+                    }
+                
+                # Проверка прав администратора
+                cursor.execute("""
+                    SELECT u.user_type
+                    FROM users u
+                    JOIN user_sessions s ON u.id = s.user_id
+                    WHERE s.session_token = %s AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = true
+                """, (session_token,))
+                
+                current_user = cursor.fetchone()
+                if not current_user or current_user[0] != 'admin':
+                    return {
+                        'statusCode': 403,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'Доступ запрещен'})
+                    }
+                
+                user_id = body_data.get('userId')
+                if not user_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'ID пользователя не указан'})
+                    }
+                
+                # Обновляемые поля
+                update_fields = []
+                update_values = []
+                
+                if 'fullName' in body_data:
+                    update_fields.append('full_name = %s')
+                    update_values.append(body_data['fullName'])
+                
+                if 'email' in body_data:
+                    update_fields.append('email = %s')
+                    update_values.append(body_data['email'].lower())
+                
+                if 'userType' in body_data:
+                    update_fields.append('user_type = %s')
+                    update_values.append(body_data['userType'])
+                
+                if 'birthDate' in body_data:
+                    update_fields.append('birth_date = %s')
+                    update_values.append(body_data['birthDate'] if body_data['birthDate'] else None)
+                
+                if 'fsrId' in body_data:
+                    update_fields.append('fsr_id = %s')
+                    update_values.append(body_data['fsrId'])
+                
+                if 'coach' in body_data:
+                    update_fields.append('coach = %s')
+                    update_values.append(body_data['coach'])
+                
+                if 'educationalInstitution' in body_data:
+                    update_fields.append('educational_institution = %s')
+                    update_values.append(body_data['educationalInstitution'])
+                
+                if update_fields:
+                    update_values.append(user_id)
+                    cursor.execute(f"""
+                        UPDATE users 
+                        SET {', '.join(update_fields)}
+                        WHERE id = %s AND is_active = true
+                    """, update_values)
+                    conn.commit()
+                
+                # Получение обновленных данных пользователя
+                cursor.execute("""
+                    SELECT u.id, u.username, u.email, u.full_name, u.user_type, u.birth_date, 
+                           u.fsr_id, u.coach, u.educational_institution, p.id as player_id
+                    FROM users u
+                    LEFT JOIN players p ON u.id = p.user_id
+                    WHERE u.id = %s AND u.is_active = true
+                """, (user_id,))
+                
+                updated_user = cursor.fetchone()
+                if not updated_user:
+                    return {
+                        'statusCode': 404,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'Пользователь не найден'})
+                    }
+                
+                user_data = {
+                    'id': updated_user[0],
+                    'username': updated_user[1],
+                    'email': updated_user[2],
+                    'fullName': updated_user[3],
+                    'userType': updated_user[4],
+                    'birthDate': updated_user[5].isoformat() if updated_user[5] else None,
+                    'fsrId': updated_user[6],
+                    'coach': updated_user[7],
+                    'educationalInstitution': updated_user[8],
+                    'playerId': updated_user[9],
+                    'role': 'admin' if updated_user[4] == 'admin' else 'player'
+                }
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                    'body': json.dumps({'success': True, 'user': user_data})
+                }
         
         elif method == 'GET':
             if session_token:
