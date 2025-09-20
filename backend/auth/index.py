@@ -50,10 +50,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 password = body_data.get('password', '')
                 full_name = body_data.get('fullName', '')
                 date_of_birth = body_data.get('dateOfBirth')
+                birth_date = body_data.get('birthDate')  # Новое поле для даты рождения
                 gender = body_data.get('gender', 'male')
                 fcr_id = body_data.get('fcrId', '')
+                fsr_id = body_data.get('fsrId', '')  # Новое поле ID ФШР
                 educational_institution = body_data.get('educationalInstitution', '')
                 trainer_name = body_data.get('trainerName', '')
+                coach = body_data.get('coach', '')  # Новое поле тренер
                 representative_email = body_data.get('representativeEmail', '')
                 representative_phone = body_data.get('representativePhone', '')
                 user_type = body_data.get('userType', 'child')
@@ -87,13 +90,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 # Создание пользователя
                 cursor.execute("""
-                    INSERT INTO users (username, email, password_hash, full_name, date_of_birth, 
-                                     gender, fcr_id, educational_institution, trainer_name, 
+                    INSERT INTO users (username, email, password_hash, full_name, date_of_birth, birth_date,
+                                     gender, fcr_id, fsr_id, educational_institution, trainer_name, coach,
                                      representative_email, representative_phone, user_type)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id, username, email, full_name, user_type
-                """, (username, email, password_hash, full_name, date_of_birth, gender, 
-                      fcr_id, educational_institution, trainer_name, representative_email, 
+                """, (username, email, password_hash, full_name, date_of_birth, birth_date, gender, 
+                      fcr_id, fsr_id, educational_institution, trainer_name, coach, representative_email, 
                       representative_phone, user_type))
                 
                 user = cursor.fetchone()

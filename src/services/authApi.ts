@@ -8,6 +8,10 @@ export interface User {
   userType: 'child' | 'parent' | 'trainer' | 'admin';
   role?: 'player' | 'moderator' | 'admin';
   playerId?: number;
+  birthDate?: string;
+  fsrId?: string;
+  coach?: string;
+  educationalInstitution?: string;
 }
 
 export interface RegisterData {
@@ -16,10 +20,13 @@ export interface RegisterData {
   password: string;
   fullName: string;
   dateOfBirth?: string;
+  birthDate?: string; // Новое поле для даты рождения
   gender?: 'male' | 'female';
   fcrId?: string;
+  fsrId?: string; // Новое поле ID ФШР
   educationalInstitution?: string;
   trainerName?: string;
+  coach?: string; // Новое поле тренер
   representativeEmail?: string;
   representativePhone?: string;
   userType?: 'child' | 'parent' | 'trainer';

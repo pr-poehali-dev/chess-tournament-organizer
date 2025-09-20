@@ -27,14 +27,30 @@ const AuthPage = () => {
     password: '',
     fullName: '',
     dateOfBirth: '',
+    birthDate: '', // Новое поле для даты рождения
     gender: 'male' as 'male' | 'female',
     fcrId: '',
+    fsrId: '', // Новое поле ID ФШР
     educationalInstitution: '',
     trainerName: '',
+    coach: '', // Новое поле тренер
     representativeEmail: '',
     representativePhone: '',
     userType: 'child' as 'child' | 'parent' | 'trainer'
   });
+
+  // Функция для вычисления возраста
+  const calculateAge = (birthDate: string): number => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,6 +154,36 @@ const AuthPage = () => {
                   <Label className="text-sm font-medium text-gray-600">Тип пользователя</Label>
                   <div className="text-lg capitalize">{user.userType}</div>
                 </div>
+                {user.birthDate && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Дата рождения</Label>
+                      <div className="text-lg">{new Date(user.birthDate).toLocaleDateString('ru-RU')}</div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Возраст</Label>
+                      <div className="text-lg font-semibold text-primary">{calculateAge(user.birthDate)} лет</div>
+                    </div>
+                  </>
+                )}
+                {user.fsrId && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">ID ФШР</Label>
+                    <div className="text-lg font-mono">{user.fsrId}</div>
+                  </div>
+                )}
+                {user.coach && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Тренер</Label>
+                    <div className="text-lg">{user.coach}</div>
+                  </div>
+                )}
+                {user.educationalInstitution && (
+                  <div className="md:col-span-2">
+                    <Label className="text-sm font-medium text-gray-600">Учебное заведение</Label>
+                    <div className="text-lg">{user.educationalInstitution}</div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -230,12 +276,60 @@ const AuthPage = () => {
               </div>
 
               <div>
-                <Label htmlFor="dateOfBirth">Дата рождения</Label>
+                <Label htmlFor="dateOfBirth">Дата рождения (старый формат)</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
                   value={registrationData.dateOfBirth}
                   onChange={(e) => setRegistrationData(prev => ({...prev, dateOfBirth: e.target.value}))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="birthDate">Дата рождения *</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={registrationData.birthDate}
+                  onChange={(e) => setRegistrationData(prev => ({...prev, birthDate: e.target.value}))}
+                />
+                {registrationData.birthDate && (
+                  <div className="text-sm text-gray-600 mt-1">
+                    Возраст: {calculateAge(registrationData.birthDate)} лет
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="fsrId">ID ФШР (Федерация шахмат России)</Label>
+                <Input
+                  id="fsrId"
+                  type="text"
+                  placeholder="Введите ваш ID ФШР"
+                  value={registrationData.fsrId}
+                  onChange={(e) => setRegistrationData(prev => ({...prev, fsrId: e.target.value}))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="coach">Тренер</Label>
+                <Input
+                  id="coach"
+                  type="text"
+                  placeholder="ФИО тренера"
+                  value={registrationData.coach}
+                  onChange={(e) => setRegistrationData(prev => ({...prev, coach: e.target.value}))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="educationalInstitution">Учебное заведение</Label>
+                <Input
+                  id="educationalInstitution"
+                  type="text"
+                  placeholder="Название школы, университета, секции"
+                  value={registrationData.educationalInstitution}
+                  onChange={(e) => setRegistrationData(prev => ({...prev, educationalInstitution: e.target.value}))}
                 />
               </div>
 
