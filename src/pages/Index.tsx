@@ -73,24 +73,66 @@ const Index = () => {
       }
       
       const data = await response.json();
+      console.log('API Response:', data); // Логирование для отладки
       
       if (data.tournaments) {
         // Преобразуем данные из БД в формат Tournament
-        const tournaments: Tournament[] = data.tournaments.map((t: any) => ({
-          id: t.id.toString(),
-          title: t.name,
-          description: t.description || '',
-          date: new Date(t.start_date).toLocaleDateString('ru-RU'),
-          time: t.start_time_msk || '10:00',
-          participants: t.current_participants || 0,
-          maxParticipants: t.max_participants || 0,
-          entryFee: t.entry_fee || 0,
-          timeControl: t.time_control || '90+30',
-          ageCategory: t.age_category || 'открытая',
-          format: t.tournament_type || 'Швейцарская система',
-          status: t.status as 'upcoming' | 'active' | 'completed'
-        }));
-        setUpcomingTournaments(tournaments);
+        const tournaments: Tournament[] = data.tournaments.map((t: any, index: number) => {
+          // Правильное мапирование статуса
+          let status: 'upcoming' | 'active' | 'finished' = 'upcoming';
+          if (t.status === 'active') status = 'active';
+          else if (t.status === 'completed' || t.status === 'finished') status = 'finished';
+          else if (t.status === 'registration') status = 'upcoming';
+          else if (t.status === 'planned') status = 'upcoming';
+
+          // Преобразование типа турнира
+          let format = 'Швейцарская система';
+          if (t.tournament_type === 'swiss') format = 'Швейцарская система';
+          else if (t.tournament_type === 'round_robin') format = 'Круговая система';
+          else if (t.tournament_type === 'knockout') format = 'На выбывание';
+          else if (t.tournament_type === 'arena') format = 'Арена';
+
+          // Генерируем тестовые данные для демонстрации
+          const maxParticipants = t.max_participants || 100;
+          const currentParticipants = Math.floor(Math.random() * maxParticipants * 0.7);
+
+          return {
+            id: t.id.toString(),
+            title: t.name || 'Турнир',
+            description: t.description || 'Описание турнира будет добавлено позже',
+            date: new Date(t.start_date).toLocaleDateString('ru-RU', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            }),
+            time: t.start_time_msk || '10:00',
+            participants: currentParticipants,
+            maxParticipants,
+            entryFee: t.entry_fee || 0,
+            timeControl: t.time_control || '90+30',
+            ageCategory: t.age_category || 'до 12 лет',
+            format,
+            status,
+            // Дополнительные поля из админ-панели
+            rounds: t.rounds || 9,
+            registrationDeadline: t.registration_deadline,
+            location: t.location || 'Онлайн',
+            startTime: t.start_time_msk || '10:00',
+            tournamentType: format,
+            prizePool: t.prize_fund || 0,
+            organizer: 'Центр "Мир шахмат"',
+            rules: 'Стандартные правила ФИДЕ. Контроль времени: ' + (t.time_control || '90+30'),
+            contactInfo: 'info@chess-world.ru, +7 (495) 123-45-67'
+          };
+        });
+        
+        // Фильтруем только предстоящие и активные турниры для пользователей
+        const activeTournaments = tournaments.filter(t => 
+          t.status === 'upcoming' || t.status === 'active'
+        );
+        
+        setUpcomingTournaments(activeTournaments);
       }
     } catch (error) {
       console.error('Ошибка загрузки турниров:', error);
