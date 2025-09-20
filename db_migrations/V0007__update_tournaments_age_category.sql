@@ -1,0 +1,1 @@
+UPDATE tournaments SET age_category = 'открытая' WHERE age_category IS NULL;
