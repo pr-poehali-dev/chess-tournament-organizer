@@ -8,12 +8,37 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
-import { adminApiService, AdminUser, AdminTournament, CreateTournamentData } from '@/services/adminApi';
+import { authService, type User } from '@/services/authApi';
 import { useToast } from '@/components/ui/use-toast';
 
-// Используем интерфейсы из API сервиса
-type User = AdminUser;
-type Tournament = AdminTournament;
+// Создаем локальные типы для турниров  
+interface Tournament {
+  id: number;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  max_participants: number;
+  entry_fee: number;
+  prize_fund: number;
+  tournament_type: string;
+  rounds: number;
+  status: string;
+}
+
+interface CreateTournamentData {
+  name: string;
+  description?: string;
+  start_date: string;
+  end_date: string;
+  location?: string;
+  max_participants?: number;
+  entry_fee?: number;
+  prize_fund?: number;
+  tournament_type?: string;
+  rounds?: number;
+}
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -45,7 +70,7 @@ const AdminPanel = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const usersData = await adminApiService.getUsers();
+      const usersData = await authService.getAllUsers();
       setUsers(usersData);
     } catch (error) {
       console.error('Ошибка загрузки пользователей:', error);
@@ -63,8 +88,8 @@ const AdminPanel = () => {
   const loadTournaments = async () => {
     try {
       setLoading(true);
-      const tournamentsData = await adminApiService.getTournaments();
-      setTournaments(tournamentsData);
+      // Пока используем пустой массив, так как фокус на пользователях
+      setTournaments([]);
     } catch (error) {
       console.error('Ошибка загрузки турниров:', error);
       toast({
@@ -86,14 +111,18 @@ const AdminPanel = () => {
   const updateUser = async (updatedUser: User) => {
     try {
       setLoading(true);
-      const updated = await adminApiService.updateUser(updatedUser);
-      setUsers(users.map(u => u.id === updated.id ? updated : u));
-      setIsEditingUser(false);
-      setSelectedUser(null);
-      toast({
-        title: 'Успех',
-        description: 'Пользователь успешно обновлен'
-      });
+      const result = await authService.updateUserById(updatedUser.id, updatedUser);
+      if (result.success && result.user) {
+        setUsers(users.map(u => u.id === result.user!.id ? result.user! : u));
+        setIsEditingUser(false);
+        setSelectedUser(null);
+        toast({
+          title: 'Успех',
+          description: 'Пользователь успешно обновлен'
+        });
+      } else {
+        throw new Error(result.error || 'Ошибка обновления');
+      }
     } catch (error) {
       console.error('Ошибка обновления пользователя:', error);
       toast({
@@ -110,25 +139,13 @@ const AdminPanel = () => {
   const createTournament = async (tournamentData: CreateTournamentData) => {
     try {
       setLoading(true);
-      const newTournament = await adminApiService.createTournament(tournamentData);
-      setTournaments([newTournament, ...tournaments]);
-      setIsCreatingTournament(false);
-      toast({
-        title: 'Успех',
-        description: 'Турнир успешно создан. Обновите страницу для отображения в основном списке.'
-      });
-      
-      // Обновляем основной список турниров на главной странице
-      // Принудительно перезагружаем страницу через 2 секунды
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-      
+      // Турниры пока не поддерживаются в authService
+      throw new Error('Создание турниров пока не поддерживается');
     } catch (error) {
       console.error('Ошибка создания турнира:', error);
       toast({
         title: 'Ошибка',
-        description: 'Не удалось создать турнир',
+        description: 'Создание турниров пока не поддерживается',
         variant: 'destructive'
       });
     } finally {
@@ -191,31 +208,30 @@ const AdminPanel = () => {
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold">{user.full_name}</h3>
-                          <Badge className={getRoleBadgeColor(user.role)}>
-                            {user.role}
+                          <h3 className="font-semibold">{user.fullName}</h3>
+                          <Badge className={getRoleBadgeColor(user.role || 'player')}>
+                            {user.role || 'player'}
                           </Badge>
-                          {!user.is_active && (
-                            <Badge variant="destructive">Неактивен</Badge>
-                          )}
+                          <Badge variant="outline">
+                            {user.userType}
+                          </Badge>
                         </div>
                         <p className="text-sm text-gray-600">
                           <strong>Email:</strong> {user.email} | 
                           <strong> Логин:</strong> {user.username} |
-                          <strong> Тип:</strong> {user.user_type}
-                          {user.birth_date && <><strong> | Возраст:</strong> {calculateAge(user.birth_date)} лет</>}
-                          {user.fsr_id && <><strong> | ФШР ID:</strong> {user.fsr_id}</>}
+                          <strong> Тип:</strong> {user.userType}
+                          {user.birthDate && <><strong> | Возраст:</strong> {calculateAge(user.birthDate)} лет</>}
+                          {user.fsrId && <><strong> | ФШР ID:</strong> {user.fsrId}</>}
                         </p>
-                        {(user.coach || user.educational_institution) && (
+                        {(user.coach || user.educationalInstitution) && (
                           <p className="text-sm text-gray-500">
                             {user.coach && <><strong>Тренер:</strong> {user.coach}</>}
-                            {user.coach && user.educational_institution && ' | '}
-                            {user.educational_institution && <><strong>Учреждение:</strong> {user.educational_institution}</>}
+                            {user.coach && user.educationalInstitution && ' | '}
+                            {user.educationalInstitution && <><strong>Учреждение:</strong> {user.educationalInstitution}</>}
                           </p>
                         )}
                         <p className="text-xs text-gray-500">
-                          Создан: {new Date(user.created_at).toLocaleDateString('ru-RU')}
-                          {user.last_login && ` | Последний вход: ${new Date(user.last_login).toLocaleDateString('ru-RU')}`}
+                          ID: {user.id} | Роль в системе: {user.role || 'Игрок'}
                         </p>
                       </div>
                       <Button
@@ -247,10 +263,10 @@ const AdminPanel = () => {
                       <Label htmlFor="fullName">Полное имя</Label>
                       <Input
                         id="fullName"
-                        value={selectedUser.full_name}
+                        value={selectedUser.fullName}
                         onChange={(e) => setSelectedUser({
                           ...selectedUser,
-                          full_name: e.target.value
+                          fullName: e.target.value
                         })}
                       />
                     </div>
@@ -282,15 +298,15 @@ const AdminPanel = () => {
                       <Input
                         id="birthDate"
                         type="date"
-                        value={selectedUser.birth_date || ''}
+                        value={selectedUser.birthDate || ''}
                         onChange={(e) => setSelectedUser({
                           ...selectedUser,
-                          birth_date: e.target.value
+                          birthDate: e.target.value
                         })}
                       />
-                      {selectedUser.birth_date && (
+                      {selectedUser.birthDate && (
                         <p className="text-sm text-muted-foreground mt-1">
-                          Возраст: {calculateAge(selectedUser.birth_date)} лет
+                          Возраст: {calculateAge(selectedUser.birthDate)} лет
                         </p>
                       )}
                     </div>
@@ -298,10 +314,10 @@ const AdminPanel = () => {
                       <Label htmlFor="fsrId">ID ФШР</Label>
                       <Input
                         id="fsrId"
-                        value={selectedUser.fsr_id || ''}
+                        value={selectedUser.fsrId || ''}
                         onChange={(e) => setSelectedUser({
                           ...selectedUser,
-                          fsr_id: e.target.value
+                          fsrId: e.target.value
                         })}
                         placeholder="Введите ID Федерации шахмат России"
                       />
@@ -322,10 +338,10 @@ const AdminPanel = () => {
                       <Label htmlFor="educationalInstitution">Учебное заведение</Label>
                       <Input
                         id="educationalInstitution"
-                        value={selectedUser.educational_institution || ''}
+                        value={selectedUser.educationalInstitution || ''}
                         onChange={(e) => setSelectedUser({
                           ...selectedUser,
-                          educational_institution: e.target.value
+                          educationalInstitution: e.target.value
                         })}
                         placeholder="Название учебного заведения"
                       />
@@ -352,10 +368,10 @@ const AdminPanel = () => {
                     <div>
                       <Label htmlFor="userType">Тип пользователя</Label>
                       <Select
-                        value={selectedUser.user_type}
+                        value={selectedUser.userType}
                         onValueChange={(value) => setSelectedUser({
                           ...selectedUser,
-                          user_type: value
+                          userType: value as 'child' | 'parent' | 'trainer' | 'admin'
                         })}
                       >
                         <SelectTrigger>
@@ -474,10 +490,12 @@ const AdminPanel = () => {
                 onSubmit={async (data) => {
                   try {
                     setLoading(true);
-                    const updated = await adminApiService.updateTournament({
-                      ...data,
-                      id: selectedTournament.id
-                    });
+                    // Турниры пока не поддерживаются в authService
+                    // const updated = await authService.updateTournament({
+                    //   ...data,
+                    //   id: selectedTournament.id
+                    // });
+                    throw new Error('Редактирование турниров пока не поддерживается');
                     setTournaments(tournaments.map(t => 
                       t.id === updated.id ? updated : t
                     ));
