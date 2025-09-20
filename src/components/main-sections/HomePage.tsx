@@ -9,6 +9,7 @@ import AuthFixNotice from '../auth/AuthFixNotice';
 
 interface HomePageProps {
   upcomingTournaments: Tournament[];
+  loading?: boolean;
   onSectionChange: (section: ActiveSection) => void;
   onTournamentRegistration: (tournament: Tournament) => void;
   onEnterTournamentRoom: (tournamentId: string) => void;
@@ -16,6 +17,7 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({
   upcomingTournaments,
+  loading = false,
   onSectionChange,
   onTournamentRegistration,
   onEnterTournamentRoom
@@ -91,7 +93,31 @@ const HomePage: React.FC<HomePageProps> = ({
             <p className="text-lg text-gray-600 font-body">Присоединяйтесь к увлекательным соревнованиям</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingTournaments.map((tournament) => (
+            {loading ? (
+              // Показываем заглушки загрузки
+              Array.from({ length: 3 }).map((_, index) => (
+                <Card key={index} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-8 bg-gray-200 rounded"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : upcomingTournaments.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <Icon name="Trophy" size={48} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">Турниры не найдены</h3>
+                <p className="text-gray-500">В настоящее время нет доступных турниров</p>
+              </div>
+            ) : (
+              upcomingTournaments.map((tournament) => (
               <Card key={tournament.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -140,7 +166,8 @@ const HomePage: React.FC<HomePageProps> = ({
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>

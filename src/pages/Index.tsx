@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,36 +59,44 @@ const Index = () => {
   });
 
   // Данные турниров
-  const upcomingTournaments: Tournament[] = [
-    {
-      id: '1',
-      title: 'Весенний турнир 2024',
-      date: '2024-04-15',
-      description: 'Возрастная группа до 12 лет',
-      participants: 15,
-      maxParticipants: 20,
-      entryFee: 250,
-      timeControl: '15+10',
-      format: 'Швейцарская система',
-      location: 'Онлайн',
-      status: 'upcoming',
-      prizePool: 5000
-    },
-    {
-      id: '2',
-      title: 'Летний чемпионат',
-      date: '2024-06-20',
-      description: 'Возрастная группа до 14 лет',
-      participants: 8,
-      maxParticipants: 16,
-      entryFee: 300,
-      timeControl: '20+5',
-      format: 'Круговая система',
-      location: 'Онлайн',
-      status: 'active',
-      prizePool: 8000
+  const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Загрузка турниров из API
+  const loadTournaments = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://functions.poehali.dev/0ea7af08-6a91-44d1-bee2-e83909110e5d');
+      const data = await response.json();
+      
+      if (data.tournaments) {
+        // Преобразуем данные из БД в формат Tournament
+        const tournaments: Tournament[] = data.tournaments.map((t: any) => ({
+          id: t.id.toString(),
+          title: t.name,
+          description: t.description || '',
+          date: new Date(t.start_date).toLocaleDateString('ru-RU'),
+          participants: t.current_participants || 0,
+          maxParticipants: t.max_participants || 0,
+          entryFee: t.entry_fee || 0,
+          prizePool: t.prize_pool || 0,
+          timeControl: '15+10', // По умолчанию
+          format: t.tournament_type || 'Швейцарская система',
+          location: t.location || 'Онлайн',
+          status: t.status as 'upcoming' | 'active' | 'completed'
+        }));
+        setUpcomingTournaments(tournaments);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки турниров:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    loadTournaments();
+  }, []);
 
   // Навигация
   const navigationItems: NavigationItem[] = [
@@ -190,6 +198,7 @@ const Index = () => {
             upcomingTournaments={upcomingTournaments}
             selectedDate={selectedDate}
             userRole={userRole}
+            loading={loading}
             onDateChange={setSelectedDate}
             onTournamentRegistration={handleTournamentRegistration}
             onEnterTournamentRoom={enterTournamentRoom}
@@ -231,6 +240,7 @@ const Index = () => {
       default:
         return <HomePage
           upcomingTournaments={upcomingTournaments}
+          loading={loading}
           onSectionChange={setActiveSection}
           onTournamentRegistration={handleTournamentRegistration}
           onEnterTournamentRoom={enterTournamentRoom}

@@ -13,6 +13,7 @@ interface TournamentsPageProps {
   upcomingTournaments: Tournament[];
   selectedDate: Date | undefined;
   userRole: string;
+  loading?: boolean;
   onDateChange: (date: Date | undefined) => void;
   onTournamentRegistration: (tournament: Tournament) => void;
   onEnterTournamentRoom: (tournamentId: string) => void;
@@ -22,6 +23,7 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
   upcomingTournaments,
   selectedDate,
   userRole,
+  loading = false,
   onDateChange,
   onTournamentRegistration,
   onEnterTournamentRoom
@@ -42,8 +44,20 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="grid md:grid-cols-2 gap-6">
-            {upcomingTournaments.map((tournament) => (
+          {loading ? (
+            <div className="text-center py-8">
+              <Icon name="Loader2" size={32} className="animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-gray-600">Загружаем турниры...</p>
+            </div>
+          ) : upcomingTournaments.length === 0 ? (
+            <div className="text-center py-8">
+              <Icon name="Trophy" size={48} className="mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Турниры не найдены</h3>
+              <p className="text-gray-500">В настоящее время нет доступных турниров</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {upcomingTournaments.map((tournament) => (
               <Card key={tournament.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -112,8 +126,9 @@ const TournamentsPage: React.FC<TournamentsPageProps> = ({
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
