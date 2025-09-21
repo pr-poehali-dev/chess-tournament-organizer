@@ -41,15 +41,22 @@ def handler(event, context):
         cursor = conn.cursor()
         print(f"Connected successfully")
         
-        # Query tournaments with all fields needed for frontend
+        # Query tournaments with real registration count
         cursor.execute('''
-            SELECT id, name, description, start_date, end_date, 
-                   max_participants, entry_fee, prize_fund, 
-                   tournament_type, status, location, created_at,
-                   time_control, age_category, start_time_msk, rounds
-            FROM t_p67413675_chess_tournament_org.tournaments
-            WHERE start_date >= CURRENT_DATE
-            ORDER BY start_date ASC 
+            SELECT t.id, t.name, t.description, t.start_date, t.end_date, 
+                   t.max_participants, t.entry_fee, t.prize_fund, 
+                   t.tournament_type, t.status, t.location, t.created_at,
+                   t.time_control, t.age_category, t.start_time_msk, t.rounds,
+                   COALESCE(reg_count.registered_count, 0) as registered_count
+            FROM t_p67413675_chess_tournament_org.tournaments t
+            LEFT JOIN (
+                SELECT tournament_id, COUNT(*) as registered_count
+                FROM t_p67413675_chess_tournament_org.tournament_registrations
+                WHERE status = 'registered'
+                GROUP BY tournament_id
+            ) reg_count ON t.id = reg_count.tournament_id
+            WHERE t.start_date >= CURRENT_DATE
+            ORDER BY t.start_date ASC 
             LIMIT 10
         ''')
         
@@ -66,8 +73,8 @@ def handler(event, context):
                 'start_date': row[3].isoformat() if row[3] else None,
                 'end_date': row[4].isoformat() if row[4] else None,
                 'max_participants': row[5] or 100,
-                'registered_count': 0,  # TODO: get from registrations table
-                'current_participants': 0,
+                'registered_count': row[16],  # Real count from database
+                'current_participants': row[16],  # Same as registered_count
                 'entry_fee': float(row[6]) if row[6] else 0,
                 'prize_fund': float(row[7]) if row[7] else 0,
                 'tournament_type': row[8] or 'swiss',

@@ -91,9 +91,9 @@ const Index = () => {
           else if (t.tournament_type === 'knockout') format = 'На выбывание';
           else if (t.tournament_type === 'arena') format = 'Арена';
 
-          // Генерируем тестовые данные для демонстрации
+          // Используем реальные данные из API
           const maxParticipants = t.max_participants || 100;
-          const currentParticipants = Math.floor(Math.random() * maxParticipants * 0.7);
+          const currentParticipants = t.registered_count || 0;
 
           const tournament = {
             id: t.id.toString(),
