@@ -1,0 +1,1 @@
+UPDATE t_p67413675_chess_tournament_org.tournament_registrations SET status = 'cancelled' WHERE id IN (1, 2, 3);
