@@ -51,6 +51,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 username = body_data.get('username')
                 password = body_data.get('password')
                 
+                print(f"Login attempt: username={username}, password length={len(password) if password else 0}")
+                print(f"Body data: {body_data}")
+                
                 if not username or not password:
                     return {
                         'statusCode': 400,
