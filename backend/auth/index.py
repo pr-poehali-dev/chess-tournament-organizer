@@ -46,7 +46,95 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         session_token = headers.get('X-Session-Token') or headers.get('x-session-token')
         
         if method == 'POST':
-            if action == 'getAllUsers':
+            if action == 'login':
+                # Вход пользователя
+                username = body_data.get('username')
+                password = body_data.get('password')
+                
+                if not username or not password:
+                    return {
+                        'statusCode': 400,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'Логин и пароль обязательны'})
+                    }
+                
+                # Ищем пользователя по username
+                cursor.execute("""
+                    SELECT id, username, email, password_hash, full_name, user_type, birth_date, 
+                           fsr_id, coach, educational_institution, role
+                    FROM users 
+                    WHERE username = %s AND is_active = true
+                """, (username.lower(),))
+                
+                user = cursor.fetchone()
+                if not user:
+                    return {
+                        'statusCode': 401,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'Неверный логин или пароль'})
+                    }
+                
+                # Проверяем пароль (пока что простое сравнение, можно добавить хеширование)
+                if user[3] != password:
+                    return {
+                        'statusCode': 401,
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                        'body': json.dumps({'success': False, 'error': 'Неверный логин или пароль'})
+                    }
+                
+                # Создаем сессию
+                session_token = secrets.token_urlsafe(32)
+                expires_at = datetime.now() + timedelta(hours=24)
+                
+                cursor.execute("""
+                    INSERT INTO user_sessions (user_id, session_token, expires_at)
+                    VALUES (%s, %s, %s)
+                """, (user[0], session_token, expires_at))
+                
+                # Обновляем last_login
+                cursor.execute("""
+                    UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = %s
+                """, (user[0],))
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                    'body': json.dumps({
+                        'success': True,
+                        'sessionToken': session_token,
+                        'expiresAt': expires_at.isoformat(),
+                        'user': {
+                            'id': user[0],
+                            'username': user[1],
+                            'email': user[2],
+                            'fullName': user[4],
+                            'userType': user[10] if user[10] else user[5],  # role или user_type
+                            'birthDate': user[6].isoformat() if user[6] else None,
+                            'fsrId': user[7],
+                            'coach': user[8],
+                            'educationalInstitution': user[9],
+                            'role': user[10] if user[10] else 'player'
+                        }
+                    })
+                }
+            
+            elif action == 'logout':
+                # Выход пользователя
+                if session_token:
+                    cursor.execute("""
+                        DELETE FROM user_sessions WHERE session_token = %s
+                    """, (session_token,))
+                    conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
+                    'body': json.dumps({'success': True})
+                }
+                
+            elif action == 'getAllUsers':
                 # Получение всех пользователей (только для админов)
                 if not session_token:
                     return {

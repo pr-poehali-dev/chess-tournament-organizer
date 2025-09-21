@@ -20,7 +20,7 @@ const AuthPage = () => {
 
   // Состояние для входа
   const [loginData, setLoginData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
 
@@ -62,9 +62,9 @@ const AuthPage = () => {
     setError('');
 
     try {
-      const success = await login(loginData.email, loginData.password);
+      const success = await login(loginData.username, loginData.password);
       if (!success) {
-        setError('Неверный email или пароль');
+        setError('Неверный логин или пароль');
       }
     } catch (err) {
       setError('Ошибка при входе в систему');
@@ -415,12 +415,12 @@ const AuthPage = () => {
             // Форма входа
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label htmlFor="loginEmail">Email</Label>
+                <Label htmlFor="loginUsername">Логин</Label>
                 <Input
-                  id="loginEmail"
-                  type="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData(prev => ({...prev, email: e.target.value}))}
+                  id="loginUsername"
+                  type="text"
+                  value={loginData.username}
+                  onChange={(e) => setLoginData(prev => ({...prev, username: e.target.value}))}
                   required
                 />
               </div>

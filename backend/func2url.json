@@ -2,6 +2,5 @@
   "tournaments-admin": "https://functions.poehali.dev/cdb79035-abcf-4b0a-a1b9-75c71a2adcf4",
   "get-tournaments": "https://functions.poehali.dev/0ea7af08-6a91-44d1-bee2-e83909110e5d",
   "admin-users": "https://functions.poehali.dev/0900b007-595d-4e27-b139-fa94592ce565",
-  "auth": "https://functions.poehali.dev/77ed06b2-9e6e-44bd-b801-eea5ca972ba0",
   "chess-api": "https://functions.poehali.dev/a0e9b180-a9ee-43de-b355-df3032eca211"
 }

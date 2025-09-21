@@ -31,18 +31,18 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Login user",
+      "name": "Login user with username",
       "method": "POST",
       "path": "/",
       "body": {
         "action": "login",
-        "email": "test@example.com",
-        "password": "password123"
+        "username": "adnib",
+        "password": "adnib"
       },
       "expectedStatus": 200,
       "expectedBody": {
         "success": true,
-        "user": "object"
+        "sessionToken": "string"
       },
       "bodyMatcher": "partial"
     }
