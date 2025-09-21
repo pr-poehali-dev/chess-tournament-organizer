@@ -1,7 +1,7 @@
 import { authService } from './authApi';
 
 const ADMIN_USERS_URL = 'https://functions.poehali.dev/0900b007-595d-4e27-b139-fa94592ce565';
-const ADMIN_TOURNAMENTS_URL = 'https://functions.poehali.dev/131555c3-7bf1-4906-b48c-a69d78e1003b';
+const ADMIN_TOURNAMENTS_URL = 'https://functions.poehali.dev/cdb79035-abcf-4b0a-a1b9-75c71a2adcf4';
 
 export interface AdminUser {
   id: number;
@@ -39,6 +39,7 @@ export interface AdminTournament {
   created_at: string;
   updated_at: string;
   created_by_name?: string;
+  registered_count: number;
 }
 
 export interface CreateTournamentData {

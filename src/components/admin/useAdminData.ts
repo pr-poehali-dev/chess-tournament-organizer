@@ -54,36 +54,8 @@ export const useAdminData = () => {
       setLoading(true);
       const tournamentsData = await adminApiService.getTournaments();
       
-      // Добавляем тестовую статистику для демонстрации
-      const tournamentsWithStats = tournamentsData.map((tournament, index) => {
-        const baseStats = {
-          registered_count: Math.floor(Math.random() * tournament.max_participants),
-          participants_count: Math.floor(Math.random() * tournament.max_participants * 0.8),
-          completed_rounds: tournament.status === 'active' ? Math.floor(Math.random() * tournament.rounds) : 
-                           tournament.status === 'completed' ? tournament.rounds : 0,
-          created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        // Корректируем статистику в зависимости от статуса
-        if (tournament.status === 'registration') {
-          baseStats.participants_count = 0;
-          baseStats.completed_rounds = 0;
-        } else if (tournament.status === 'planned') {
-          baseStats.registered_count = 0;
-          baseStats.participants_count = 0;
-          baseStats.completed_rounds = 0;
-        } else if (tournament.status === 'completed') {
-          baseStats.participants_count = baseStats.registered_count;
-        }
-        
-        return {
-          ...tournament,
-          ...baseStats
-        };
-      });
-      
-      setTournaments(tournamentsWithStats);
+      // Используем реальные данные из API
+      setTournaments(tournamentsData);
     } catch (error) {
       console.error('Ошибка загрузки турниров:', error);
       toast({

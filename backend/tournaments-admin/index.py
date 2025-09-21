@@ -1,5 +1,5 @@
 """
-Business: API для управления турнирами администратором
+Business: API для управления турнирами администратором с подсчётом реальных регистраций
 Args: event - dict с httpMethod, body, queryStringParameters
       context - объект с атрибутами: request_id, function_name, function_version, memory_limit_in_mb
 Returns: HTTP response dict
@@ -118,7 +118,7 @@ def check_admin_rights(session_token: Optional[str]) -> Optional[Dict[str, Any]]
         return None
 
 def get_tournaments() -> Dict[str, Any]:
-    """Получение списка всех турниров"""
+    """Получение списка всех турниров с реальным подсчётом регистраций"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -140,9 +140,16 @@ def get_tournaments() -> Dict[str, Any]:
             t.status,
             t.created_at,
             t.updated_at,
-            u.full_name as created_by_name
+            u.full_name as created_by_name,
+            COALESCE(reg_count.registered_count, 0) as registered_count
         FROM t_p67413675_chess_tournament_org.tournaments t
         LEFT JOIN t_p67413675_chess_tournament_org.users u ON t.created_by = u.id
+        LEFT JOIN (
+            SELECT tournament_id, COUNT(*) as registered_count
+            FROM t_p67413675_chess_tournament_org.tournament_registrations
+            WHERE status = 'registered'
+            GROUP BY tournament_id
+        ) reg_count ON t.id = reg_count.tournament_id
         ORDER BY t.created_at DESC
     """)
     
@@ -170,7 +177,8 @@ def get_tournaments() -> Dict[str, Any]:
             'status': row[13],
             'created_at': row[14].isoformat() if row[14] else None,
             'updated_at': row[15].isoformat() if row[15] else None,
-            'created_by_name': row[16]
+            'created_by_name': row[16],
+            'registered_count': row[17]
         }
         tournaments_list.append(tournament_dict)
     
@@ -268,7 +276,8 @@ def create_tournament(data: Dict[str, Any], created_by: int) -> Dict[str, Any]:
             'status': new_tournament[13],
             'created_at': new_tournament[14].isoformat() if new_tournament[14] else None,
             'updated_at': new_tournament[15].isoformat() if new_tournament[15] else None,
-            'created_by_name': new_tournament[16]
+            'created_by_name': new_tournament[16],
+            'registered_count': 0  # Новый турнир без регистраций
         }
         
         return {

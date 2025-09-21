@@ -1,0 +1,17 @@
+{
+  "tests": [{
+    "name": "Test admin tournaments list",
+    "method": "GET", 
+    "path": "/",
+    "headers": {
+      "X-Session-Token": "admin-test-token"
+    },
+    "expectedStatus": 200,
+    "expectedBody": {
+      "success": true,
+      "tournaments": "array",
+      "total": "number"
+    },
+    "bodyMatcher": "partial"
+  }]
+}
