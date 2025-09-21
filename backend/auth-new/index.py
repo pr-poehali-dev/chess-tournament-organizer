@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
-    API для регистрации и авторизации пользователей
+    API для регистрации и авторизации пользователей с хэшированием паролей
     Поддерживает регистрацию, вход, выход, проверку сессии
     """
     
@@ -74,8 +74,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'success': False, 'error': 'Неверный логин или пароль'})
                     }
                 
-                # Проверяем пароль (пока что простое сравнение, можно добавить хеширование)
-                if user[3] != password:
+                # Проверяем пароль через хэш SHA-256
+                password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+                if user[3] != password_hash:
                     return {
                         'statusCode': 401,
                         'headers': {**cors_headers, 'Content-Type': 'application/json'},
@@ -133,174 +134,73 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'body': json.dumps({'success': True})
                 }
-                
-            elif action == 'getAllUsers':
-                # Получение всех пользователей (только для админов)
-                if not session_token:
-                    return {
-                        'statusCode': 401,
-                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                        'body': json.dumps({'error': 'Необходима авторизация'})
-                    }
-                
-                # Проверка прав администратора
-                cursor.execute("""
-                    SELECT u.user_type
-                    FROM users u
-                    JOIN user_sessions s ON u.id = s.user_id
-                    WHERE s.session_token = %s AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = true
-                """, (session_token,))
-                
-                current_user = cursor.fetchone()
-                if not current_user or current_user[0] != 'admin':
-                    return {
-                        'statusCode': 403,
-                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                        'body': json.dumps({'error': 'Доступ запрещен'})
-                    }
-                
-                # Получение всех пользователей
-                cursor.execute("""
-                    SELECT u.id, u.username, u.email, u.full_name, u.user_type, u.birth_date, 
-                           u.fsr_id, u.coach, u.educational_institution, p.id as player_id
-                    FROM users u
-                    LEFT JOIN players p ON u.id = p.user_id
-                    WHERE u.is_active = true
-                    ORDER BY u.created_at DESC
-                """)
-                
-                users = cursor.fetchall()
-                users_list = []
-                for user in users:
-                    users_list.append({
-                        'id': user[0],
-                        'username': user[1],
-                        'email': user[2],
-                        'fullName': user[3],
-                        'userType': user[4],
-                        'birthDate': user[5].isoformat() if user[5] else None,
-                        'fsrId': user[6],
-                        'coach': user[7],
-                        'educationalInstitution': user[8],
-                        'playerId': user[9],
-                        'role': 'admin' if user[4] == 'admin' else 'player'
-                    })
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                    'body': json.dumps(users_list)
-                }
             
-            elif action == 'updateUserById':
-                # Обновление данных любого пользователя (для админов)
-                if not session_token:
-                    return {
-                        'statusCode': 401,
-                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                        'body': json.dumps({'success': False, 'error': 'Необходима авторизация'})
-                    }
+            elif action == 'register':
+                # Регистрация нового пользователя
+                username = body_data.get('username')
+                email = body_data.get('email') 
+                password = body_data.get('password')
+                full_name = body_data.get('fullName')
                 
-                # Проверка прав администратора
-                cursor.execute("""
-                    SELECT u.user_type
-                    FROM users u
-                    JOIN user_sessions s ON u.id = s.user_id
-                    WHERE s.session_token = %s AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = true
-                """, (session_token,))
-                
-                current_user = cursor.fetchone()
-                if not current_user or current_user[0] != 'admin':
-                    return {
-                        'statusCode': 403,
-                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                        'body': json.dumps({'success': False, 'error': 'Доступ запрещен'})
-                    }
-                
-                user_id = body_data.get('userId')
-                if not user_id:
+                if not username or not email or not password or not full_name:
                     return {
                         'statusCode': 400,
                         'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                        'body': json.dumps({'success': False, 'error': 'ID пользователя не указан'})
+                        'body': json.dumps({'success': False, 'error': 'Все обязательные поля должны быть заполнены'})
                     }
                 
-                # Обновляемые поля
-                update_fields = []
-                update_values = []
-                
-                if 'fullName' in body_data:
-                    update_fields.append('full_name = %s')
-                    update_values.append(body_data['fullName'])
-                
-                if 'email' in body_data:
-                    update_fields.append('email = %s')
-                    update_values.append(body_data['email'].lower())
-                
-                if 'userType' in body_data:
-                    update_fields.append('user_type = %s')
-                    update_values.append(body_data['userType'])
-                
-                if 'birthDate' in body_data:
-                    update_fields.append('birth_date = %s')
-                    update_values.append(body_data['birthDate'] if body_data['birthDate'] else None)
-                
-                if 'fsrId' in body_data:
-                    update_fields.append('fsr_id = %s')
-                    update_values.append(body_data['fsrId'])
-                
-                if 'coach' in body_data:
-                    update_fields.append('coach = %s')
-                    update_values.append(body_data['coach'])
-                
-                if 'educationalInstitution' in body_data:
-                    update_fields.append('educational_institution = %s')
-                    update_values.append(body_data['educationalInstitution'])
-                
-                if update_fields:
-                    update_values.append(user_id)
-                    cursor.execute(f"""
-                        UPDATE users 
-                        SET {', '.join(update_fields)}
-                        WHERE id = %s AND is_active = true
-                    """, update_values)
-                    conn.commit()
-                
-                # Получение обновленных данных пользователя
+                # Проверяем уникальность username и email
                 cursor.execute("""
-                    SELECT u.id, u.username, u.email, u.full_name, u.user_type, u.birth_date, 
-                           u.fsr_id, u.coach, u.educational_institution, p.id as player_id
-                    FROM users u
-                    LEFT JOIN players p ON u.id = p.user_id
-                    WHERE u.id = %s AND u.is_active = true
-                """, (user_id,))
+                    SELECT id FROM users WHERE username = %s OR email = %s
+                """, (username.lower(), email.lower()))
                 
-                updated_user = cursor.fetchone()
-                if not updated_user:
+                if cursor.fetchone():
                     return {
-                        'statusCode': 404,
+                        'statusCode': 409,
                         'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                        'body': json.dumps({'success': False, 'error': 'Пользователь не найден'})
+                        'body': json.dumps({'success': False, 'error': 'Пользователь с таким логином или email уже существует'})
                     }
                 
-                user_data = {
-                    'id': updated_user[0],
-                    'username': updated_user[1],
-                    'email': updated_user[2],
-                    'fullName': updated_user[3],
-                    'userType': updated_user[4],
-                    'birthDate': updated_user[5].isoformat() if updated_user[5] else None,
-                    'fsrId': updated_user[6],
-                    'coach': updated_user[7],
-                    'educationalInstitution': updated_user[8],
-                    'playerId': updated_user[9],
-                    'role': 'admin' if updated_user[4] == 'admin' else 'player'
-                }
+                # Хэшируем пароль
+                password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+                
+                # Создаём пользователя
+                cursor.execute("""
+                    INSERT INTO users (username, email, password_hash, full_name, user_type, role)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id, username, email, full_name, user_type, role
+                """, (username.lower(), email.lower(), password_hash, full_name, 'player', 'player'))
+                
+                new_user = cursor.fetchone()
+                conn.commit()
+                
+                # Создаем сессию
+                session_token = secrets.token_urlsafe(32)
+                expires_at = datetime.now() + timedelta(hours=24)
+                
+                cursor.execute("""
+                    INSERT INTO user_sessions (user_id, session_token, expires_at)
+                    VALUES (%s, %s, %s)
+                """, (new_user[0], session_token, expires_at))
+                
+                conn.commit()
                 
                 return {
                     'statusCode': 200,
                     'headers': {**cors_headers, 'Content-Type': 'application/json'},
-                    'body': json.dumps({'success': True, 'user': user_data})
+                    'body': json.dumps({
+                        'success': True,
+                        'sessionToken': session_token,
+                        'expiresAt': expires_at.isoformat(),
+                        'user': {
+                            'id': new_user[0],
+                            'username': new_user[1],
+                            'email': new_user[2],
+                            'fullName': new_user[3],
+                            'userType': new_user[4],
+                            'role': new_user[5]
+                        }
+                    })
                 }
         
         elif method == 'GET':
@@ -308,7 +208,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 # Проверка сессии
                 cursor.execute("""
                     SELECT u.id, u.username, u.email, u.full_name, u.user_type, u.birth_date, 
-                           u.fsr_id, u.coach, u.educational_institution, p.id as player_id
+                           u.fsr_id, u.coach, u.educational_institution, p.id as player_id, u.role
                     FROM users u
                     JOIN user_sessions s ON u.id = s.user_id
                     LEFT JOIN players p ON u.id = p.user_id
@@ -327,13 +227,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                                 'username': user[1],
                                 'email': user[2],
                                 'fullName': user[3],
-                                'userType': user[4],
+                                'userType': user[10] if user[10] else user[4],
                                 'birthDate': user[5].isoformat() if user[5] else None,
                                 'fsrId': user[6],
                                 'coach': user[7],
                                 'educationalInstitution': user[8],
                                 'playerId': user[9],
-                                'role': 'admin' if user[4] == 'admin' else 'player'
+                                'role': user[10] if user[10] else 'player'
                             }
                         })
                     }
